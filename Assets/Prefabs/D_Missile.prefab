@@ -220,6 +220,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 362b34424b3af5d4d843b34b667b8696, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  scoreValue: 100
+  explosionSounds:
+  - {fileID: 8300000, guid: 8fdd26ba469f2d6438371cc5ab9aff49, type: 3}
+  - {fileID: 8300000, guid: 6d64b02ff2cd87e499e02e79a56025d1, type: 3}
+  - {fileID: 8300000, guid: 6a0bfaf8ba8e0864a9ba5817f458a03d, type: 3}
+  - {fileID: 8300000, guid: 2bdddf98ce53f23488827d571c3f7a31, type: 3}
+  explosionVolume: 0.55
 --- !u!1 &6859290032525314941
 GameObject:
   m_ObjectHideFlags: 0

@@ -548,6 +548,11 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 1615000476541732508, guid: 7ce5c998463e94343bdb399b2005b227,
+        type: 3}
+      propertyPath: m_StaticEditorFlags
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 1678489693141904518, guid: 7ce5c998463e94343bdb399b2005b227,
         type: 3}
       propertyPath: m_LocalPosition.x
@@ -602,6 +607,26 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: Spaceship
+      objectReference: {fileID: 0}
+    - target: {fileID: 7511988550849762343, guid: 7ce5c998463e94343bdb399b2005b227,
+        type: 3}
+      propertyPath: m_ReceiveGI
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 7511988550849762343, guid: 7ce5c998463e94343bdb399b2005b227,
+        type: 3}
+      propertyPath: m_CastShadows
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7511988550849762343, guid: 7ce5c998463e94343bdb399b2005b227,
+        type: 3}
+      propertyPath: m_DynamicOccludee
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7511988550849762343, guid: 7ce5c998463e94343bdb399b2005b227,
+        type: 3}
+      propertyPath: m_StaticShadowCaster
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
