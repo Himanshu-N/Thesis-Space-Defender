@@ -1,5 +1,6 @@
 using UnityEngine;
 using TMPro;
+using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 using System.Collections;
 
@@ -14,7 +15,12 @@ public class GameManager : MonoBehaviour
 
     [Header("UI References")]
     public TMP_Text scoreText;
-    public TMP_Text healthText;
+    public Image[] healthBlocks;
+
+    [Header("Health Colors")]
+    public Color highHealthColor = Color.green;
+    public Color medHealthColor = new Color(1f, 0.5f, 0f); // Default Orange
+    public Color lowHealthColor = Color.red;
 
     [Header("Visual FX")]
     public Light alarmLight;
@@ -49,40 +55,29 @@ public class GameManager : MonoBehaviour
         currentHealth -= amount;
         UpdateUI();
 
-        // --- Play Random Damage Sound ---
         if (damageSounds.Length > 0 && shipEffectsAudio != null)
         {
             int randomIndex = Random.Range(0, damageSounds.Length);
             AudioClip clipToPlay = damageSounds[randomIndex];
-
-            if (clipToPlay != null)
-            {
-                shipEffectsAudio.PlayOneShot(clipToPlay, damageVolume);
-            }
+            if (clipToPlay != null) shipEffectsAudio.PlayOneShot(clipToPlay, damageVolume);
         }
 
-        // --- Flash Red Light ---
         if (alarmLight != null)
         {
             StopCoroutine("FlashAlarm");
             StartCoroutine("FlashAlarm");
         }
 
-        // --- Siren Logic ---
-        if (sirenAudio != null && currentHealth <= 40)
+        if (sirenAudio != null && currentHealth <= 20)
         {
             if (!sirenAudio.isPlaying) sirenAudio.Play();
         }
 
-        if (currentHealth <= 0)
-        {
-            GameOver();
-        }
+        if (currentHealth <= 0) GameOver();
     }
 
     IEnumerator FlashAlarm()
     {
-        // 1. Rapid flash (feedback for taking a hit)
         for (int i = 0; i < 3; i++)
         {
             alarmLight.intensity = alarmIntensity;
@@ -91,10 +86,9 @@ public class GameManager : MonoBehaviour
             yield return new WaitForSeconds(0.1f);
         }
 
-        // 2. Continuous strobe (if health is in the critical zone)
         while (currentHealth <= 20 && alarmLight != null)
         {
-            alarmLight.intensity = alarmIntensity * 0.8f; // Slightly dimmer for the constant loop
+            alarmLight.intensity = alarmIntensity * 0.8f;
             yield return new WaitForSeconds(0.3f);
             alarmLight.intensity = 0;
             yield return new WaitForSeconds(0.3f);
@@ -103,8 +97,40 @@ public class GameManager : MonoBehaviour
 
     void UpdateUI()
     {
-        if (scoreText != null) scoreText.text = "SCORE: " + score;
-        if (healthText != null) healthText.text = "HULL: " + currentHealth + "%";
+        // 1. Update Score
+        if (scoreText != null)
+        {
+            scoreText.text = score.ToString("D5");
+        }
+
+        // 2. Update Health Blocks
+        if (healthBlocks.Length > 0)
+        {
+            float healthPercent = currentHealth / maxHealth;
+            int blocksToActive = Mathf.CeilToInt(healthPercent * healthBlocks.Length);
+
+            // Determine the color based on the current percentage
+            Color currentBlockColor = highHealthColor; // Default to Green
+
+            if (healthPercent <= 0.3f)
+                currentBlockColor = lowHealthColor; // 30% or less = Red
+            else if (healthPercent <= 0.6f)
+                currentBlockColor = medHealthColor; // 60% to 30% = Orange
+
+            // Apply visibility and color
+            for (int i = 0; i < healthBlocks.Length; i++)
+            {
+                if (i < blocksToActive)
+                {
+                    healthBlocks[i].enabled = true;
+                    healthBlocks[i].color = currentBlockColor; // Apply the active color
+                }
+                else
+                {
+                    healthBlocks[i].enabled = false;
+                }
+            }
+        }
     }
 
     void GameOver()
