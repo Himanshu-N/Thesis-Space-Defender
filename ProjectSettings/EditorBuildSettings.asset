@@ -5,9 +5,21 @@ EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
   m_Scenes:
-  - enabled: 1
+  - enabled: 0
     path: Assets/Scenes/Stationary Scene.unity
     guid: 99c9720ab356a0642a771bea13969a05
+  - enabled: 1
+    path: Assets/Scenes/MainMenu.unity
+    guid: e8441e964eda11548a269a9f8b10272f
+  - enabled: 1
+    path: Assets/Scenes/Level_Easy.unity
+    guid: 58b1b9446d56dcc4ca27af5048fd5906
+  - enabled: 1
+    path: Assets/Scenes/Level_Medium.unity
+    guid: ec5c81492393fb8498c100c5087623df
+  - enabled: 1
+    path: Assets/Scenes/Level_Hard.unity
+    guid: 1aa0c7ec2b40a474080deb233f87a73a
   m_configObjects:
     com.unity.xr.management.loader_settings: {fileID: 11400000, guid: 906a1dcab4b11fb408217ba834d3116d,
       type: 2}

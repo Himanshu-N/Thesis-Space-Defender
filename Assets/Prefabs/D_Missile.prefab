@@ -10,7 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4744631951943457108}
   - component: {fileID: 5230325146867087342}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Trail
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -156,7 +156,7 @@ GameObject:
   - component: {fileID: 1202485524982720667}
   - component: {fileID: 5905731760531254969}
   - component: {fileID: 2300425676136074688}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: D_Missile
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -238,7 +238,7 @@ GameObject:
   - component: {fileID: 5368026134511718789}
   - component: {fileID: 6614804313547451934}
   - component: {fileID: 6658163520381270423}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Point Light
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -357,7 +357,7 @@ GameObject:
   - component: {fileID: 22601524573580485}
   - component: {fileID: 2126861480549471027}
   - component: {fileID: 8651731976293370535}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Missile
   m_TagString: Untagged
   m_Icon: {fileID: 0}

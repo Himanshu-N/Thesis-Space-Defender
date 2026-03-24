@@ -1,84 +1,137 @@
 using UnityEngine;
-using UnityEngine.XR; // This is the VR library
+using UnityEngine.XR;
+using System.Collections;
 
 public class D_ShipBlaster : MonoBehaviour
 {
     [Header("References")]
     public GameObject missilePrefab;
-    public Transform firePoint1;      // Left Gun
-    public Transform firePoint2;      // Right Gun
-    public Transform crosshair;       // The moving UI Image
-
-    [Header("Aiming Logic")]
+    public Transform firePoint1;
+    public Transform firePoint2;
+    public Transform crosshair;
     public Transform pilotEye;
-    public float convergenceDistance = 100f;
 
     [Header("Settings")]
     public float missileSpeed = 50f;
-
-    // VR specific variable to stop rapid-fire
+    public float convergenceDistance = 100f;
     private bool wasTriggerPressed = false;
+    private bool wasReloadPressed = false; // Needed for manual reload
+
+    [Header("Ammo & Reload")]
+    public int maxAmmo = 20;
+    private int currentAmmo;
+    public float reloadTime = 2f;
+    private bool isReloading = false;
 
     [Header("Audio")]
     public AudioClip shootSound;
-    public AudioSource blasterAudioSource; // Add this line
+    public AudioClip reloadSound;
+    public AudioSource blasterAudioSource;
 
+    private float menuGracePeriod = 0.5f;
     void Start()
     {
         if (pilotEye == null) pilotEye = Camera.main.transform;
+        currentAmmo = maxAmmo;
+
+        if (GameManager.Instance != null) GameManager.Instance.UpdateAmmoUI(currentAmmo, maxAmmo);
     }
+
+    // --- ADD THIS WITH YOUR OTHER VARIABLES ---
+
+    // ... (Keep Start() the same) ...
 
     void Update()
     {
-        // --- 1. PC Keyboard/Mouse Fallback (For testing without headset) ---
-        if (Input.GetButtonDown("Fire1") || Input.GetKeyDown(KeyCode.Space))
-        {
-            Shoot();
-        }
-
-        // --- 2. VR Controller Logic (Right Hand Trigger) ---
+        // 1. ALWAYS read inputs continuously
         InputDevice rightHand = InputDevices.GetDeviceAtXRNode(XRNode.RightHand);
+        bool isTriggerPressed = false;
+        bool isPrimaryPressed = false;
+
         if (rightHand.isValid)
         {
-            // Read the trigger value
-            rightHand.TryGetFeatureValue(CommonUsages.triggerButton, out bool isTriggerPressed);
+            rightHand.TryGetFeatureValue(CommonUsages.triggerButton, out isTriggerPressed);
+            rightHand.TryGetFeatureValue(CommonUsages.primaryButton, out isPrimaryPressed);
+        }
 
-            // If it wasn't pressed last frame, but IS pressed this frame = "Button Down"
-            if (isTriggerPressed && !wasTriggerPressed)
-            {
-                Shoot();
-            }
-            // Save state for next frame
-            wasTriggerPressed = isTriggerPressed;
+        bool tryingToShoot = Input.GetButtonDown("Fire1") || Input.GetKeyDown(KeyCode.Space) || (isTriggerPressed && !wasTriggerPressed);
+        bool tryingToReload = Input.GetKeyDown(KeyCode.R) || (isPrimaryPressed && !wasReloadPressed);
+
+        wasTriggerPressed = isTriggerPressed;
+        wasReloadPressed = isPrimaryPressed;
+
+        // --- THE FIXES ---
+        // 2. Do absolutely nothing if we are on the instruction or end screen
+        if (GameManager.Instance != null && GameManager.Instance.currentState != GameManager.GameState.Playing)
+        {
+            return;
+        }
+
+        // 3. Warm-up delay to swallow the "Menu Click"
+        if (menuGracePeriod > 0)
+        {
+            menuGracePeriod -= Time.deltaTime;
+            return;
+        }
+
+        // 4. Reload & Shoot Logic
+        if (isReloading) return;
+
+        if (tryingToReload && currentAmmo < maxAmmo)
+        {
+            StartCoroutine(ReloadRoutine());
+            return;
+        }
+
+        if (tryingToShoot)
+        {
+            Shoot();
         }
     }
 
     void Shoot()
     {
         if (missilePrefab == null || crosshair == null || pilotEye == null) return;
+        if (currentAmmo <= 0) return;
 
-        // Aim calculation
         Vector3 eyeToCrosshair = (crosshair.position - pilotEye.position).normalized;
         Vector3 targetPoint = pilotEye.position + (eyeToCrosshair * convergenceDistance);
 
-        // --- MISSILE 1 (Left) ---
-        GameObject missile1 = Instantiate(missilePrefab, firePoint1.position, Quaternion.identity);
-        Vector3 aimDir1 = (targetPoint - firePoint1.position).normalized;
-        missile1.transform.rotation = Quaternion.LookRotation(aimDir1);
-        if (missile1.TryGetComponent<Rigidbody>(out Rigidbody rb1)) rb1.velocity = aimDir1 * missileSpeed;
-        Destroy(missile1, 5f);
+        GameObject m1 = Instantiate(missilePrefab, firePoint1.position, Quaternion.identity);
+        Vector3 aim1 = (targetPoint - firePoint1.position).normalized;
+        m1.transform.rotation = Quaternion.LookRotation(aim1);
+        if (m1.TryGetComponent<Rigidbody>(out Rigidbody rb1)) rb1.velocity = aim1 * missileSpeed;
+        Destroy(m1, 5f);
 
-        // --- MISSILE 2 (Right) ---
-        GameObject missile2 = Instantiate(missilePrefab, firePoint2.position, Quaternion.identity);
-        Vector3 aimDir2 = (targetPoint - firePoint2.position).normalized;
-        missile2.transform.rotation = Quaternion.LookRotation(aimDir2);
-        if (missile2.TryGetComponent<Rigidbody>(out Rigidbody rb2)) rb2.velocity = aimDir2 * missileSpeed;
-        Destroy(missile2, 5f);
+        GameObject m2 = Instantiate(missilePrefab, firePoint2.position, Quaternion.identity);
+        Vector3 aim2 = (targetPoint - firePoint2.position).normalized;
+        m2.transform.rotation = Quaternion.LookRotation(aim2);
+        if (m2.TryGetComponent<Rigidbody>(out Rigidbody rb2)) rb2.velocity = aim2 * missileSpeed;
+        Destroy(m2, 5f);
 
-        if (shootSound != null && blasterAudioSource != null)
-        {
-            // PlayOneShot is instantaneous and doesn't create lag
-            blasterAudioSource.PlayOneShot(shootSound);
-        }
+        if (shootSound != null && blasterAudioSource != null) blasterAudioSource.PlayOneShot(shootSound);
+
+        currentAmmo--;
+        if (GameManager.Instance != null) GameManager.Instance.RegisterShot(); // <-- ADD THIS LINE
+
+        if (currentAmmo <= 0) StartCoroutine(ReloadRoutine());
+    }
+
+    IEnumerator ReloadRoutine()
+    {
+        isReloading = true; // Locks the gun immediately
+
+        if (reloadSound != null && blasterAudioSource != null)
+            blasterAudioSource.PlayOneShot(reloadSound);
+
+        if (GameManager.Instance != null)
+            GameManager.Instance.StartReloadBlink(reloadTime);
+
+        yield return new WaitForSeconds(reloadTime);
+
+        currentAmmo = maxAmmo;
+        isReloading = false; // Unlocks the gun
+
+        if (GameManager.Instance != null) GameManager.Instance.UpdateAmmoUI(currentAmmo, maxAmmo);
     }
 }
