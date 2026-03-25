@@ -13,6 +13,11 @@ public class AsteroidMover : MonoBehaviour
 
     void Start()
     {
+        // Reads the difficulty from the GameManager and multiplies its speed!
+        if (GameManager.Instance != null)
+        {
+            speed = speed * GameManager.Instance.currentRockSpeedMultiplier;
+        }
         if (Camera.main != null) targetPos = Camera.main.transform.position;
         startPos = transform.position;
         totalDistance = Vector3.Distance(startPos, targetPos);

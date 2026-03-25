@@ -20,9 +20,10 @@ public class GameManager : MonoBehaviour
 
     [Header("HUD References")]
     public TMP_Text scoreText;
-    public TMP_Text dashboardTimerText; // Repurposed!
+    public TMP_Text dashboardTimerText;
     public TMP_Text waveText;
-    public TMP_Text centerAnnouncerText; // NEW: The giant Arcade text
+    // --- CHANGED: Now accepts the parent GameObject ---
+    public GameObject centerAnnouncerObject;
     public Image[] healthBlocks;
 
     [Header("Ammo UI")]
@@ -35,13 +36,16 @@ public class GameManager : MonoBehaviour
     public TMP_Text endTitleText;
     public TMP_Text finalScoreText;
     public TMP_Text finalHealthText;
-    public TMP_Text finalRoundsText; // NEW: Rounds Fired Stat
+    public TMP_Text finalRoundsText;
+    public TMP_Text finalTimeText;
 
-    [Header("Game Stats")]
+    [Header("Game Stats & Difficulty")]
     public int score = 0;
     public float currentHealth = 100;
     public float maxHealth = 100;
-    public int totalRoundsFired = 0; // NEW
+    public int totalRoundsFired = 0;
+    public float totalTimePlaying = 0f;
+    public float currentRockSpeedMultiplier = 1.0f;
 
     [Header("Health Colors")]
     public Color highHealthColor = Color.green;
@@ -52,10 +56,10 @@ public class GameManager : MonoBehaviour
     public Light alarmLight;
     public float alarmIntensity = 2.0f;
     public AudioSource sirenAudio;
-    public AudioClip countdownTickSound; // <-- NEW: Drag your beep/tick sound here
     public AudioSource shipEffectsAudio;
     public AudioClip[] damageSounds;
     [Range(0f, 2f)] public float damageVolume = 1.0f;
+    public AudioClip countdownTickSound;
 
     private float menuGracePeriod = 0.5f;
     private bool wasTriggerPressed = false;
@@ -74,7 +78,9 @@ public class GameManager : MonoBehaviour
         if (instructionCanvas != null) instructionCanvas.SetActive(true);
         if (hudCanvas != null) hudCanvas.SetActive(false);
         if (endScreenCanvas != null) endScreenCanvas.SetActive(false);
-        if (centerAnnouncerText != null) centerAnnouncerText.gameObject.SetActive(false);
+
+        // --- CHANGED ---
+        if (centerAnnouncerObject != null) centerAnnouncerObject.SetActive(false);
 
         UpdateUI();
         if (alarmLight != null) alarmLight.intensity = 0f;
@@ -82,7 +88,14 @@ public class GameManager : MonoBehaviour
 
     void Update()
     {
-        if (currentState == GameState.Instructions) CheckForStartTrigger();
+        if (currentState == GameState.Instructions)
+        {
+            CheckForStartTrigger();
+        }
+        else if (currentState == GameState.Playing)
+        {
+            totalTimePlaying += Time.deltaTime;
+        }
     }
 
     void CheckForStartTrigger()
@@ -107,22 +120,29 @@ public class GameManager : MonoBehaviour
         if (hudCanvas != null) hudCanvas.SetActive(true);
     }
 
-    // --- NEW: Public methods for the Spawner and Blaster to use ---
+    public void RegisterShot() { totalRoundsFired += 2; }
 
-    public void RegisterShot() { totalRoundsFired += 2; } // +2 because you fire double missiles!
-
+    // --- CHANGED: Finds the text child, updates it, then turns on the whole parent ---
     public void ShowAnnouncer(string message)
     {
-        if (centerAnnouncerText != null)
+        if (centerAnnouncerObject != null)
         {
-            centerAnnouncerText.text = message;
-            centerAnnouncerText.gameObject.SetActive(true);
+            TMP_Text textComponent = centerAnnouncerObject.GetComponentInChildren<TMP_Text>();
+            if (textComponent != null) textComponent.text = message;
+
+            centerAnnouncerObject.SetActive(true);
         }
     }
 
     public void HideAnnouncer()
     {
-        if (centerAnnouncerText != null) centerAnnouncerText.gameObject.SetActive(false);
+        if (centerAnnouncerObject != null) centerAnnouncerObject.SetActive(false);
+    }
+    // --------------------------------------------------------------------------------
+
+    public void ShowDashboardDashes()
+    {
+        if (dashboardTimerText != null) dashboardTimerText.text = "--:--";
     }
 
     public void UpdateDashboardTimer(float timeRemaining)
@@ -135,7 +155,10 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    // ----------------------------------------------------------------
+    public void PlayCountdownTick()
+    {
+        if (countdownTickSound != null && shipEffectsAudio != null) shipEffectsAudio.PlayOneShot(countdownTickSound, 1.0f);
+    }
 
     public void AddScore(int amount)
     {
@@ -170,10 +193,12 @@ public class GameManager : MonoBehaviour
 
     public void UpdateAmmoUI(int current, int max)
     {
-        if (ammoBlocks.Length == 0 || currentState != GameState.Playing) return;
+        if (ammoBlocks == null || ammoBlocks.Length == 0) return;
         if (reloadCoroutine != null) { StopCoroutine(reloadCoroutine); reloadCoroutine = null; }
 
-        int blocksToActive = (current * ammoBlocks.Length) / max;
+        float percent = (float)current / max;
+        int blocksToActive = Mathf.CeilToInt(percent * ammoBlocks.Length);
+
         for (int i = 0; i < ammoBlocks.Length; i++)
         {
             ammoBlocks[i].enabled = (i < blocksToActive);
@@ -242,26 +267,22 @@ public class GameManager : MonoBehaviour
         if (alarmLight != null) alarmLight.intensity = 0f;
 
         if (hudCanvas != null) hudCanvas.SetActive(false);
-        if (centerAnnouncerText != null) centerAnnouncerText.gameObject.SetActive(false);
+
+        // --- CHANGED ---
+        if (centerAnnouncerObject != null) centerAnnouncerObject.SetActive(false);
+
         if (endScreenCanvas != null) endScreenCanvas.SetActive(true);
 
         if (endTitleText != null) endTitleText.text = survived ? "SECTOR CLEARED" : "SHIP DESTROYED";
         if (finalScoreText != null) finalScoreText.text = "Final Score: " + score;
         if (finalHealthText != null) finalHealthText.text = "Hull Integrity: " + currentHealth + "%";
-
-        // --- NEW STAT ---
         if (finalRoundsText != null) finalRoundsText.text = "Missiles Fired: " + totalRoundsFired;
-    }
-    public void ShowDashboardDashes()
-    {
-        if (dashboardTimerText != null) dashboardTimerText.text = "--:--";
-    }
 
-    public void PlayCountdownTick()
-    {
-        if (countdownTickSound != null && shipEffectsAudio != null)
+        if (finalTimeText != null)
         {
-            shipEffectsAudio.PlayOneShot(countdownTickSound, 1.0f);
+            int mins = Mathf.FloorToInt(totalTimePlaying / 60F);
+            int secs = Mathf.FloorToInt(totalTimePlaying - mins * 60);
+            finalTimeText.text = string.Format("Time Alive: {0:00}:{1:00}", mins, secs);
         }
     }
 }

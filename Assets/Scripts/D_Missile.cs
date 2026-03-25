@@ -12,18 +12,27 @@ public class D_Missile : MonoBehaviour
     {
         if (collision.gameObject.CompareTag("Enemy"))
         {
-            // Only play if the list has at least one sound in it
-            if (explosionSounds.Length > 0)
+            // 1. Check if the rock has health
+            AsteroidHealth healthScript = collision.gameObject.GetComponent<AsteroidHealth>();
+            bool isDead = true; // Default to true for old rocks that don't have the script yet
+
+            if (healthScript != null)
             {
-                PlayProper3DSound(transform.position);
+                isDead = healthScript.TakeDamage(1); // Subtract 1 health
             }
 
-            if (GameManager.Instance != null) GameManager.Instance.AddScore(scoreValue);
+            // 2. Only explode and give points IF it actually died
+            if (isDead)
+            {
+                if (explosionSounds.Length > 0) PlayProper3DSound(transform.position);
+                if (GameManager.Instance != null) GameManager.Instance.AddScore(scoreValue);
 
-            Fracture frac = collision.gameObject.GetComponent<Fracture>();
-            if (frac) frac.FractureObject();
-            else Destroy(collision.gameObject);
+                Fracture frac = collision.gameObject.GetComponent<Fracture>();
+                if (frac) frac.FractureObject();
+                else Destroy(collision.gameObject);
+            }
 
+            // 3. The missile always destroys itself on impact
             Destroy(gameObject);
         }
     }

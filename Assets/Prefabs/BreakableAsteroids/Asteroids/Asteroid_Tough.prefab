@@ -11,12 +11,13 @@ GameObject:
   - component: {fileID: 8202099386964702900}
   - component: {fileID: 3920238243864616851}
   - component: {fileID: 8422643619591072449}
-  - component: {fileID: 5175909829843006713}
   - component: {fileID: 2615907601388813192}
   - component: {fileID: -6510009239339751982}
   - component: {fileID: -7857720552335131404}
+  - component: {fileID: 4872906985614788065}
+  - component: {fileID: -4891351285490343469}
   m_Layer: 6
-  m_Name: Rock1
+  m_Name: Asteroid_Tough
   m_TagString: Enemy
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -65,7 +66,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 1de1e5504c8db064f85644d27342d50f, type: 2}
+  - {fileID: 2100000, guid: a6a95ba6c256cb545bbb041ed0c8e0c9, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -87,22 +88,6 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!114 &5175909829843006713
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7437889339238721774}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b4b8c7d88eebb9940b3c4196017b84df, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  fractured: {fileID: 7273956540791742907, guid: 9cb5e7465eef1af4988889e41a071493,
-    type: 3}
-  explosionForce: 500
-  explosionRadius: 5
 --- !u!64 &2615907601388813192
 MeshCollider:
   m_ObjectHideFlags: 0
@@ -137,8 +122,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7f487a1970b0eef4f980555d879f8022, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  speed: 5
-  maxScale: 2
+  speed: 6
+  maxScale: 3
   damage: 20
 --- !u!54 &-7857720552335131404
 Rigidbody:
@@ -148,7 +133,7 @@ Rigidbody:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7437889339238721774}
   serializedVersion: 4
-  m_Mass: 1
+  m_Mass: 10
   m_Drag: 0
   m_AngularDrag: 0.05
   m_CenterOfMass: {x: 0, y: 0, z: 0}
@@ -167,3 +152,36 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
+--- !u!114 &4872906985614788065
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7437889339238721774}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 25b166e647137a64aa2649331ef2ac94, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  health: 1
+  splitPrefabs:
+  - {fileID: 7437889339238721774, guid: 140907bab4102964893c05c087e5fb0d, type: 3}
+  meshRenderer: {fileID: 8422643619591072449}
+  damageFlashColor: {r: 1, g: 1, b: 1, a: 1}
+--- !u!114 &-4891351285490343469
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7437889339238721774}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b4b8c7d88eebb9940b3c4196017b84df, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  fractured: {fileID: 7273956540791742907, guid: cb8746435d295f64ab6b34fd8d6a0cb0,
+    type: 3}
+  explosionForce: 1000
+  explosionRadius: 10

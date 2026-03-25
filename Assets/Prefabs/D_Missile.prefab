@@ -189,7 +189,7 @@ Rigidbody:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1203766387227844120}
   serializedVersion: 4
-  m_Mass: 1
+  m_Mass: 0.1
   m_Drag: 0
   m_AngularDrag: 0.05
   m_CenterOfMass: {x: 0, y: 0, z: 0}
@@ -226,7 +226,7 @@ MonoBehaviour:
   - {fileID: 8300000, guid: 6d64b02ff2cd87e499e02e79a56025d1, type: 3}
   - {fileID: 8300000, guid: 6a0bfaf8ba8e0864a9ba5817f458a03d, type: 3}
   - {fileID: 8300000, guid: 2bdddf98ce53f23488827d571c3f7a31, type: 3}
-  explosionVolume: 0.55
+  explosionVolume: 0.26
 --- !u!1 &6859290032525314941
 GameObject:
   m_ObjectHideFlags: 0

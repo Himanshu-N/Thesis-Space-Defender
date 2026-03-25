@@ -112,8 +112,11 @@ public class D_ShipBlaster : MonoBehaviour
         if (shootSound != null && blasterAudioSource != null) blasterAudioSource.PlayOneShot(shootSound);
 
         currentAmmo--;
-        if (GameManager.Instance != null) GameManager.Instance.RegisterShot(); // <-- ADD THIS LINE
-
+        if (GameManager.Instance != null)
+        {
+            GameManager.Instance.RegisterShot(); // This tracks the end-game stats
+            GameManager.Instance.UpdateAmmoUI(currentAmmo, maxAmmo); // THIS updates the visual blocks!
+        }
         if (currentAmmo <= 0) StartCoroutine(ReloadRoutine());
     }
 
