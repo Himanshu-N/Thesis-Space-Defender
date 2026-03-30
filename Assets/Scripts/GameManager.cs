@@ -21,6 +21,7 @@ public class GameManager : MonoBehaviour
     [Header("HUD References")]
     public TMP_Text scoreText;
     public TMP_Text dashboardTimerText;
+    public TMP_Text timerSubText; // <-- NEW!
     public TMP_Text waveText;
     // --- CHANGED: Now accepts the parent GameObject ---
     public GameObject centerAnnouncerObject;
@@ -120,8 +121,7 @@ public class GameManager : MonoBehaviour
         if (hudCanvas != null) hudCanvas.SetActive(true);
     }
 
-    public void RegisterShot() { totalRoundsFired += 2; }
-
+    public void RegisterShot() { totalRoundsFired += 1; }
     // --- CHANGED: Finds the text child, updates it, then turns on the whole parent ---
     public void ShowAnnouncer(string message)
     {
@@ -284,5 +284,9 @@ public class GameManager : MonoBehaviour
             int secs = Mathf.FloorToInt(totalTimePlaying - mins * 60);
             finalTimeText.text = string.Format("Time Alive: {0:00}:{1:00}", mins, secs);
         }
+    }
+    public void SetTimerSubText(string message)
+    {
+        if (timerSubText != null) timerSubText.text = message;
     }
 }

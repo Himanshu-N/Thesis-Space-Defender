@@ -42,28 +42,21 @@ public class AsteroidHealth : MonoBehaviour
 
     void SplitIntoPieces()
     {
-        // 1. Grab the current speed and direction of the big rock
         Rigidbody myRb = GetComponent<Rigidbody>();
-        Vector3 currentVelocity = myRb != null ? myRb.velocity : Vector3.zero;
 
         if (splitPrefabs != null && splitPrefabs.Length > 0)
         {
             foreach (GameObject prefab in splitPrefabs)
             {
-                // Give them a slight offset so they don't clip into each other
-                Vector3 randomOffset = Random.insideUnitSphere * 1.5f;
-                GameObject piece = Instantiate(prefab, transform.position + randomOffset, Random.rotation);
+                // Instantiate with EXACT position and rotation of the parent
+                GameObject piece = Instantiate(prefab, transform.position, transform.rotation);
 
-                // --- THE PHYSICS FIX ---
+                // Copy the exact velocity so it doesn't shoot off in a random direction
                 Rigidbody pieceRb = piece.GetComponent<Rigidbody>();
-                if (pieceRb != null)
+                if (pieceRb != null && myRb != null)
                 {
-                    // Inherit the parent's speed, PLUS add an explosive outward burst!
-                    Vector3 burst = randomOffset.normalized * Random.Range(3f, 8f);
-                    pieceRb.velocity = currentVelocity + burst;
-
-                    // Add some random tumbling rotation
-                    pieceRb.angularVelocity = Random.insideUnitSphere * Random.Range(2f, 5f);
+                    pieceRb.velocity = myRb.velocity;
+                    pieceRb.angularVelocity = myRb.angularVelocity;
                 }
             }
         }

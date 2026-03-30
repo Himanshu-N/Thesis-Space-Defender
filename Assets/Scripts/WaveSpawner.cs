@@ -33,7 +33,6 @@ public class WaveSpawner : MonoBehaviour
     IEnumerator WaveCycleRoutine()
     {
         while (GameManager.Instance == null || !GameManager.Instance.isLevelActive) yield return null;
-
         yield return new WaitForSeconds(2f);
 
         while (GameManager.Instance != null && GameManager.Instance.isLevelActive && currentWave < totalWaves)
@@ -41,11 +40,9 @@ public class WaveSpawner : MonoBehaviour
             currentWave++;
             GameManager.Instance.UpdateWaveUI(currentWave, totalWaves);
 
-            // --- CALCULATE DIFFICULTY FOR THIS SPECIFIC WAVE ---
             currentSpawnRate = initialSpawnRate - ((currentWave - 1) * spawnRateDecreasePerWave);
-            if (currentSpawnRate < 0.2f) currentSpawnRate = 0.2f; // Hard limit so the game doesn't crash!
+            if (currentSpawnRate < 0.2f) currentSpawnRate = 0.2f;
 
-            // Tell GameManager to increase the speed multiplier for the rocks
             GameManager.Instance.currentRockSpeedMultiplier = 1.0f + ((currentWave - 1) * rockSpeedIncreasePerWave);
 
             // 1. ANNOUNCE WAVE
@@ -54,6 +51,7 @@ public class WaveSpawner : MonoBehaviour
             GameManager.Instance.HideAnnouncer();
 
             // 2. SPAWNING PHASE 
+            GameManager.Instance.SetTimerSubText("Rocks\nGenerating");
             float phaseTimer = waveDuration;
             isSpawning = true;
             StartCoroutine(SpawnAsteroidsRoutine());
@@ -68,12 +66,21 @@ public class WaveSpawner : MonoBehaviour
             isSpawning = false;
 
             // 3. CLEANUP PHASE 
-            GameManager.Instance.ShowDashboardDashes();
+            GameManager.Instance.SetTimerSubText("Debris\nCleanup");
+            float maxCleanupTime = 15f;
 
-            while (GameObject.FindGameObjectsWithTag("Enemy").Length > 0 && GameManager.Instance.isLevelActive)
+            while (GameObject.FindGameObjectsWithTag("Enemy").Length > 0 && GameManager.Instance.isLevelActive && maxCleanupTime > 0)
             {
-                yield return new WaitForSeconds(0.5f);
+                maxCleanupTime -= Time.deltaTime;
+                if (maxCleanupTime < 0) maxCleanupTime = 0;
+
+                GameManager.Instance.UpdateDashboardTimer(maxCleanupTime);
+                yield return null;
             }
+
+            // FORCE CLEANUP
+            GameObject[] missedRocks = GameObject.FindGameObjectsWithTag("Enemy");
+            foreach (GameObject rock in missedRocks) Destroy(rock);
 
             if (GameManager.Instance.isLevelActive)
             {
@@ -84,10 +91,15 @@ public class WaveSpawner : MonoBehaviour
             // 4. BREAK PHASE 
             if (currentWave < totalWaves && GameManager.Instance.isLevelActive)
             {
+                // --- CHANGED: Dashboard locked to Dashes and "Rocks Generating" ---
+                GameManager.Instance.SetTimerSubText("Rocks\nGenerating");
+                GameManager.Instance.ShowDashboardDashes();
+
                 int countdown = Mathf.CeilToInt(breakDuration);
 
                 while (countdown > 0 && GameManager.Instance.isLevelActive)
                 {
+                    // The countdown now ONLY happens on the center announcer
                     GameManager.Instance.ShowAnnouncer("NEXT WAVE IN:\n" + countdown);
                     GameManager.Instance.PlayCountdownTick();
                     yield return new WaitForSeconds(1f);
@@ -100,13 +112,15 @@ public class WaveSpawner : MonoBehaviour
         // 5. VICTORY
         if (GameManager.Instance.currentHealth > 0 && GameManager.Instance.isLevelActive)
         {
+            // --- CHANGED: Empties the subtext and shows dashes so it's perfectly clean ---
+            GameManager.Instance.SetTimerSubText("");
             GameManager.Instance.ShowDashboardDashes();
+
             GameManager.Instance.ShowAnnouncer("ALL WAVES CLEARED!");
             yield return new WaitForSeconds(3f);
             GameManager.Instance.LevelComplete(true);
         }
     }
-
     IEnumerator SpawnAsteroidsRoutine()
     {
         while (isSpawning)

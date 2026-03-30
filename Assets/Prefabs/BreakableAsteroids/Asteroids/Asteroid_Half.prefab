@@ -15,6 +15,7 @@ GameObject:
   - component: {fileID: 2615907601388813192}
   - component: {fileID: -7857720552335131404}
   - component: {fileID: 8645643402805892181}
+  - component: {fileID: -2533829154330469622}
   m_Layer: 6
   m_Name: Asteroid_Half
   m_TagString: Enemy
@@ -168,3 +169,18 @@ MonoBehaviour:
   splitPrefabs: []
   meshRenderer: {fileID: 8422643619591072449}
   damageFlashColor: {r: 1, g: 1, b: 1, a: 1}
+--- !u!114 &-2533829154330469622
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7437889339238721774}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7f487a1970b0eef4f980555d879f8022, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  speed: 6
+  maxScale: 3
+  damage: 20
