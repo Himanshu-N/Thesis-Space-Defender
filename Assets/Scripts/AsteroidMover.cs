@@ -4,7 +4,7 @@ public class AsteroidMover : MonoBehaviour
 {
     public float speed = 15f;
     public float maxScale = 2.0f;
-    public int damage = 20; // How much it hurts
+    public int damage = 1; // How much it hurts
 
     private Vector3 targetPos;
     private Vector3 startPos;

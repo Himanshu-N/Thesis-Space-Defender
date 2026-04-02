@@ -42,8 +42,8 @@ public class GameManager : MonoBehaviour
 
     [Header("Game Stats & Difficulty")]
     public int score = 0;
-    public float currentHealth = 100;
-    public float maxHealth = 100;
+    public int currentHealth = 7; // CHANGED: Now an exact hit count
+    public int maxHealth = 7;     // CHANGED: Max 7 hits
     public int totalRoundsFired = 0;
     public float totalTimePlaying = 0f;
     public float currentRockSpeedMultiplier = 1.0f;
@@ -167,25 +167,6 @@ public class GameManager : MonoBehaviour
         UpdateUI();
     }
 
-    public void TakeDamage(int amount)
-    {
-        if (currentState != GameState.Playing) return;
-
-        currentHealth -= amount;
-        UpdateUI();
-
-        if (damageSounds.Length > 0 && shipEffectsAudio != null)
-        {
-            int randomIndex = Random.Range(0, damageSounds.Length);
-            shipEffectsAudio.PlayOneShot(damageSounds[randomIndex], damageVolume);
-        }
-
-        if (alarmLight != null) { StopCoroutine("FlashAlarm"); StartCoroutine("FlashAlarm"); }
-        if (sirenAudio != null && currentHealth <= 20) { if (!sirenAudio.isPlaying) sirenAudio.Play(); }
-
-        if (currentHealth <= 0) LevelComplete(false);
-    }
-
     public void UpdateWaveUI(int currentWave, int totalWaves)
     {
         if (waveText != null) waveText.text = "Wave\n" + currentWave.ToString("D2") + "/" + totalWaves.ToString("D2");
@@ -224,18 +205,26 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    IEnumerator FlashAlarm()
+    public void TakeDamage(int amount)
     {
-        for (int i = 0; i < 3; i++)
+        if (currentState != GameState.Playing) return;
+
+        currentHealth -= amount;
+        if (currentHealth < 0) currentHealth = 0;
+        UpdateUI();
+
+        if (damageSounds.Length > 0 && shipEffectsAudio != null)
         {
-            alarmLight.intensity = alarmIntensity; yield return new WaitForSeconds(0.1f);
-            alarmLight.intensity = 0; yield return new WaitForSeconds(0.1f);
+            int randomIndex = Random.Range(0, damageSounds.Length);
+            shipEffectsAudio.PlayOneShot(damageSounds[randomIndex], damageVolume);
         }
-        while (currentHealth <= 20 && alarmLight != null && currentState == GameState.Playing)
-        {
-            alarmLight.intensity = alarmIntensity * 0.8f; yield return new WaitForSeconds(0.3f);
-            alarmLight.intensity = 0; yield return new WaitForSeconds(0.3f);
-        }
+
+        if (alarmLight != null) { StopCoroutine("FlashAlarm"); StartCoroutine("FlashAlarm"); }
+
+        // --- CHANGED: Alarm triggers on the last 2 blocks ---
+        if (sirenAudio != null && currentHealth <= 2) { if (!sirenAudio.isPlaying) sirenAudio.Play(); }
+
+        if (currentHealth <= 0) LevelComplete(false);
     }
 
     void UpdateUI()
@@ -244,17 +233,34 @@ public class GameManager : MonoBehaviour
 
         if (healthBlocks.Length > 0)
         {
-            float healthPercent = currentHealth / maxHealth;
-            int blocksToActive = Mathf.CeilToInt(healthPercent * healthBlocks.Length);
             Color currentBlockColor = highHealthColor;
-            if (healthPercent <= 0.3f) currentBlockColor = lowHealthColor;
-            else if (healthPercent <= 0.6f) currentBlockColor = medHealthColor;
+
+            // --- CHANGED: Hardcoded color states based on your exact rules ---
+            if (currentHealth <= 2) currentBlockColor = lowHealthColor; // Red for 1 or 2 blocks
+            else if (currentHealth <= 5) currentBlockColor = medHealthColor; // Orange for 3, 4, or 5 blocks
 
             for (int i = 0; i < healthBlocks.Length; i++)
             {
-                healthBlocks[i].enabled = (i < blocksToActive);
+                // Directly maps hit points to blocks (no more decimals/percentages)
+                healthBlocks[i].enabled = (i < currentHealth);
                 healthBlocks[i].color = currentBlockColor;
             }
+        }
+    }
+
+    IEnumerator FlashAlarm()
+    {
+        for (int i = 0; i < 3; i++)
+        {
+            alarmLight.intensity = alarmIntensity; yield return new WaitForSeconds(0.1f);
+            alarmLight.intensity = 0; yield return new WaitForSeconds(0.1f);
+        }
+
+        // --- CHANGED: Keeps flashing if 2 blocks or lower ---
+        while (currentHealth <= 2 && alarmLight != null && currentState == GameState.Playing)
+        {
+            alarmLight.intensity = alarmIntensity * 0.8f; yield return new WaitForSeconds(0.3f);
+            alarmLight.intensity = 0; yield return new WaitForSeconds(0.3f);
         }
     }
 
@@ -275,7 +281,8 @@ public class GameManager : MonoBehaviour
 
         if (endTitleText != null) endTitleText.text = survived ? "SECTOR CLEARED" : "SHIP DESTROYED";
         if (finalScoreText != null) finalScoreText.text = "Final Score: " + score;
-        if (finalHealthText != null) finalHealthText.text = "Hull Integrity: " + currentHealth + "%";
+        // Replace your old finalHealthText line with this one:
+        if (finalHealthText != null) finalHealthText.text = "Hull Integrity: " + currentHealth + " / " + maxHealth;
         if (finalRoundsText != null) finalRoundsText.text = "Missiles Fired: " + totalRoundsFired;
 
         if (finalTimeText != null)

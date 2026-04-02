@@ -183,4 +183,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   speed: 6
   maxScale: 3
-  damage: 20
+  damage: 1
