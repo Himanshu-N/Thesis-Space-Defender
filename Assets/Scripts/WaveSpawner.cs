@@ -109,16 +109,15 @@ public class WaveSpawner : MonoBehaviour
             }
         }
 
-        // 5. VICTORY
-        if (GameManager.Instance.currentHealth > 0 && GameManager.Instance.isLevelActive)
+        // 5. VICTORY (No health check, you always survive)
+        if (GameManager.Instance.isLevelActive)
         {
-            // --- CHANGED: Empties the subtext and shows dashes so it's perfectly clean ---
             GameManager.Instance.SetTimerSubText("");
             GameManager.Instance.ShowDashboardDashes();
 
             GameManager.Instance.ShowAnnouncer("ALL WAVES CLEARED!");
             yield return new WaitForSeconds(3f);
-            GameManager.Instance.LevelComplete(true);
+            GameManager.Instance.LevelComplete();
         }
     }
     IEnumerator SpawnAsteroidsRoutine()

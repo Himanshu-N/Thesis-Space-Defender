@@ -5,6 +5,7 @@ public class AsteroidMover : MonoBehaviour
     public float speed = 15f;
     public float maxScale = 2.0f;
     public int damage = 1; // How much it hurts
+    public int scorePenalty = 20; // Editable in the inspector!
 
     private Vector3 targetPos;
     private Vector3 startPos;
@@ -52,7 +53,7 @@ public class AsteroidMover : MonoBehaviour
         // 1. Apply Damage
         if (GameManager.Instance != null)
         {
-            GameManager.Instance.TakeDamage(damage);
+            GameManager.Instance.RegisterShipHit(scorePenalty);
         }
 
         // 2. Visual Feedback (Optional Shake?)
