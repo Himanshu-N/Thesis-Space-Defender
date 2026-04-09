@@ -37,10 +37,12 @@ public class GameManager : MonoBehaviour
     public TMP_Text finalTimeText;
 
     [Header("Game Stats & Difficulty")]
-    public int score = 0;
+    public int totalScore = 0;
+    public int currentWaveScore = 0;
+    public int scoreRewardPerRock = 100; // NEW: Editable in the Inspector!
     public int totalRoundsFired = 0;
     public float totalTimePlaying = 0f;
-    public float currentRockSpeedMultiplier = 1.0f;
+    public float currentRockSpeed = 50f; // CHANGED: Now tracks Actual Speed, not a multiplier
 
     [Header("Visual FX & Audio")]
     public Light alarmLight;
@@ -100,12 +102,18 @@ public class GameManager : MonoBehaviour
         if (hudCanvas != null) hudCanvas.SetActive(true);
     }
 
-    // --- NEW SCORE LOGIC ---
+    // --- UPDATED SCORE LOGIC ---
+
+    public void ResetWaveScore()
+    {
+        currentWaveScore = 0;
+    }
 
     public void AddScore(int amount)
     {
         if (currentState != GameState.Playing) return;
-        score += amount;
+        totalScore += amount;
+        currentWaveScore += amount;
         UpdateScoreUI();
     }
 
@@ -113,7 +121,13 @@ public class GameManager : MonoBehaviour
     {
         if (currentState != GameState.Playing) return;
 
-        score -= scorePenalty; // Deducts the precise amount passed from the rock
+        totalScore -= scorePenalty;
+        currentWaveScore -= scorePenalty;
+
+        // CLAMPING RULES (If less than zero, equals zero)
+        if (totalScore < 0) totalScore = 0;
+        if (currentWaveScore < 0) currentWaveScore = 0;
+
         UpdateScoreUI();
 
         if (damageSounds.Length > 0 && shipEffectsAudio != null)
@@ -127,7 +141,7 @@ public class GameManager : MonoBehaviour
 
     void UpdateScoreUI()
     {
-        if (scoreText != null) scoreText.text = score.ToString();
+        if (scoreText != null) scoreText.text = totalScore.ToString();
     }
 
     // --- UTILS & UI ---
@@ -218,8 +232,8 @@ public class GameManager : MonoBehaviour
         if (centerAnnouncerObject != null) centerAnnouncerObject.SetActive(false);
         if (endScreenCanvas != null) endScreenCanvas.SetActive(true);
 
-        if (endTitleText != null) endTitleText.text = "SECTOR CLEARED";
-        if (finalScoreText != null) finalScoreText.text = "Final Score: " + score;
+        if (endTitleText != null) endTitleText.text = "ASSESSMENT COMPLETE";
+        if (finalScoreText != null) finalScoreText.text = "Final Score: " + totalScore;
         if (finalRoundsText != null) finalRoundsText.text = "Missiles Fired: " + totalRoundsFired;
 
         if (finalTimeText != null)

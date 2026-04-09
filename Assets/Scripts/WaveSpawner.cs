@@ -43,7 +43,7 @@ public class WaveSpawner : MonoBehaviour
             currentSpawnRate = initialSpawnRate - ((currentWave - 1) * spawnRateDecreasePerWave);
             if (currentSpawnRate < 0.2f) currentSpawnRate = 0.2f;
 
-            GameManager.Instance.currentRockSpeedMultiplier = 1.0f + ((currentWave - 1) * rockSpeedIncreasePerWave);
+            GameManager.Instance.currentRockSpeed = 1.0f + ((currentWave - 1) * rockSpeedIncreasePerWave);
 
             // 1. ANNOUNCE WAVE
             GameManager.Instance.ShowAnnouncer("WAVE " + currentWave + " INCOMING");

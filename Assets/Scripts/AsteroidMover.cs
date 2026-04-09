@@ -17,7 +17,7 @@ public class AsteroidMover : MonoBehaviour
         // Reads the difficulty from the GameManager and multiplies its speed!
         if (GameManager.Instance != null)
         {
-            speed = speed * GameManager.Instance.currentRockSpeedMultiplier;
+            speed = GameManager.Instance.currentRockSpeed;
         }
         if (Camera.main != null) targetPos = Camera.main.transform.position;
         startPos = transform.position;
