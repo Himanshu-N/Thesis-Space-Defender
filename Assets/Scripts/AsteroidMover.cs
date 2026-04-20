@@ -2,26 +2,38 @@ using UnityEngine;
 
 public class AsteroidMover : MonoBehaviour
 {
+    [Header("Movement & Targeting")]
     public float speed = 15f;
     public float maxScale = 2.0f;
-    public int damage = 1; // How much it hurts
-    public int scorePenalty = 20; // Editable in the inspector!
+    public Vector2 targetOffset = new Vector2(3f, 3f);
+
+    [Header("Damage Settings")]
+    public int damage = 1;
+    public int scorePenalty = 50;
+
+    [Header("VFX")]
+    [Tooltip("Drag your 100-piece fracture prefab here")]
+    public GameObject fracturePrefab;
 
     private Vector3 targetPos;
     private Vector3 startPos;
-    private float totalDistance;
-    private bool hasHitPlayer = false; // Prevent double damage
+    private bool hasHitPlayer = false;
 
     void Start()
     {
-        // Reads the difficulty from the GameManager and multiplies its speed!
-        if (GameManager.Instance != null)
+        if (GameManager.Instance != null) speed = GameManager.Instance.currentRockSpeed;
+
+        if (Camera.main != null)
         {
-            speed = GameManager.Instance.currentRockSpeed;
+            Vector3 randomDrift = new Vector3(
+                Random.Range(-targetOffset.x, targetOffset.x),
+                Random.Range(-targetOffset.y, targetOffset.y),
+                0f
+            );
+            targetPos = Camera.main.transform.position + randomDrift;
         }
-        if (Camera.main != null) targetPos = Camera.main.transform.position;
+
         startPos = transform.position;
-        totalDistance = Vector3.Distance(startPos, targetPos);
 
         Rigidbody rb = GetComponent<Rigidbody>();
         if (rb != null) rb.angularVelocity = Random.insideUnitSphere * 2f;
@@ -31,16 +43,19 @@ public class AsteroidMover : MonoBehaviour
     {
         if (hasHitPlayer) return;
 
-        // Move
         transform.position = Vector3.MoveTowards(transform.position, targetPos, speed * Time.deltaTime);
 
-        // Scale Logic... (Keep your existing scaling code here)
+        if (Camera.main != null && transform.position.z < Camera.main.transform.position.z - 2f)
+        {
+            Destroy(gameObject);
+        }
+    }
 
-        // DAMAGE LOGIC
-        float currentDist = Vector3.Distance(transform.position, targetPos);
+    private void OnCollisionEnter(Collision collision)
+    {
+        if (hasHitPlayer) return;
 
-        // If it gets within 2 meters (basically inside the cockpit)
-        if (currentDist < 2.0f)
+        if (collision.gameObject.CompareTag("Player"))
         {
             HitPlayer();
         }
@@ -50,16 +65,30 @@ public class AsteroidMover : MonoBehaviour
     {
         hasHitPlayer = true;
 
-        // 1. Apply Damage
         if (GameManager.Instance != null)
         {
             GameManager.Instance.RegisterShipHit(scorePenalty);
         }
 
-        // 2. Visual Feedback (Optional Shake?)
-        // (We will add Glass Break effect here later!)
+        // --- NEW: FRACTURE ON IMPACT ---
+        if (fracturePrefab != null)
+        {
+            GameObject debris = Instantiate(fracturePrefab, transform.position, transform.rotation);
 
-        // 3. Destroy Rock
+            // Calculate the exact speed and direction it was traveling
+            Vector3 travelDirection = (targetPos - startPos).normalized;
+            Vector3 impactVelocity = travelDirection * speed;
+
+            // Push every piece of debris past the player
+            Rigidbody[] pieces = debris.GetComponentsInChildren<Rigidbody>();
+            foreach (Rigidbody pieceRb in pieces)
+            {
+                // Give it the forward momentum PLUS a little outward burst so it scatters across the windshield
+                Vector3 randomScatter = Random.insideUnitSphere * 5f;
+                pieceRb.velocity = impactVelocity + randomScatter;
+            }
+        }
+
         Destroy(gameObject);
     }
 }

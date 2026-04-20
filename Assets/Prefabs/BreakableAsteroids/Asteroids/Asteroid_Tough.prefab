@@ -124,8 +124,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   speed: 6
   maxScale: 3
+  targetOffset: {x: 3, y: 2}
   damage: 2
   scorePenalty: 40
+  fracturePrefab: {fileID: 7273956540791742907, guid: cb8746435d295f64ab6b34fd8d6a0cb0,
+    type: 3}
 --- !u!54 &-7857720552335131404
 Rigidbody:
   m_ObjectHideFlags: 0

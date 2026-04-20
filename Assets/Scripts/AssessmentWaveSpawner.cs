@@ -18,7 +18,7 @@ public class AssessmentWaveSpawner : MonoBehaviour
     [Header("Initial Difficulty Parameters")]
     public float startingSpawnInterval = 1.0f;
     public float startingRockSpeed = 50f;
-    public float adaptationPercentage = 0.05f;
+    public float adaptationPercentage = 0.1f;
 
     private int currentWave = 0;
     private float currentSpawnInterval;
@@ -98,21 +98,25 @@ public class AssessmentWaveSpawner : MonoBehaviour
             float trueDuration = Time.time - internalStartTime;
 
             // PERFORMANCE CALCULATION & ADAPTATION 
+            // --- 5. PERFORMANCE CALCULATION & ADAPTATION ---
             int maxPossibleScore = rocksSpawnedThisWave * GameManager.Instance.scoreRewardPerRock;
             int actualScore = GameManager.Instance.currentWaveScore;
 
             float performancePercent = maxPossibleScore > 0 ? ((float)actualScore / maxPossibleScore) * 100f : 0f;
             string decision = "Maintained";
 
+            // Get the exact percentage from the Inspector to use in the text log (e.g., 0.1 * 100 = 10)
+            int displayPercent = Mathf.RoundToInt(adaptationPercentage * 100f);
+
             if (performancePercent < 60f)
             {
-                decision = "Eased (-5%)";
+                decision = $"Eased (-{displayPercent}%)"; // Dynamically writes -10%
                 currentRockSpeed *= (1f - adaptationPercentage);
                 currentSpawnInterval *= (1f + adaptationPercentage);
             }
             else if (performancePercent > 80f)
             {
-                decision = "Cranked (+5%)";
+                decision = $"Cranked (+{displayPercent}%)"; // Dynamically writes +10%
                 currentRockSpeed *= (1f + adaptationPercentage);
                 currentSpawnInterval *= (1f - adaptationPercentage);
             }
@@ -177,5 +181,12 @@ public class AssessmentWaveSpawner : MonoBehaviour
         );
         Vector3 finalSpawnPos = transform.position + randomPos;
         Instantiate(asteroidPrefab, finalSpawnPos, Random.rotation);
+    }
+    // --- ADD THIS AT THE BOTTOM OF YOUR SPAWNER SCRIPT ---
+    void OnDrawGizmosSelected()
+    {
+        // Creates a semi-transparent red box in the Scene view so you can see your spawn area
+        Gizmos.color = new Color(1f, 0f, 0f, 0.4f);
+        Gizmos.DrawCube(transform.position, spawnAreaSize);
     }
 }

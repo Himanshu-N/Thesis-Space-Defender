@@ -77,24 +77,12 @@ public class GameManager : MonoBehaviour
 
     void Update()
     {
-        if (currentState == GameState.Instructions) CheckForStartTrigger();
-        else if (currentState == GameState.Playing) totalTimePlaying += Time.deltaTime;
+        if (currentState == GameState.Playing) totalTimePlaying += Time.deltaTime;
     }
 
-    void CheckForStartTrigger()
-    {
-        if (Input.GetKeyDown(KeyCode.Space)) StartGame();
 
-        InputDevice rightHand = InputDevices.GetDeviceAtXRNode(XRNode.RightHand);
-        if (rightHand.isValid)
-        {
-            rightHand.TryGetFeatureValue(CommonUsages.triggerButton, out bool isTriggerPressed);
-            if (isTriggerPressed && !wasTriggerPressed) StartGame();
-            wasTriggerPressed = isTriggerPressed;
-        }
-    }
 
-    void StartGame()
+    public void StartGame()
     {
         currentState = GameState.Playing;
         isLevelActive = true;

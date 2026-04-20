@@ -66,7 +66,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 1de1e5504c8db064f85644d27342d50f, type: 2}
+  - {fileID: 2100000, guid: f7d2ab12228c96d47b2c99f9666c7a81, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -183,4 +183,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   speed: 6
   maxScale: 3
+  targetOffset: {x: 3, y: 3}
   damage: 1
+  scorePenalty: 50
+  fracturePrefab: {fileID: 7273956540791742907, guid: 9cb5e7465eef1af4988889e41a071493,
+    type: 3}
