@@ -64,7 +64,7 @@ public class AssessmentWaveSpawner : MonoBehaviour
             float internalStartTime = Time.time;
 
             // SPAWNING PHASE
-            GameManager.Instance.SetTimerSubText("Rocks Generating");
+            GameManager.Instance.SetTimerSubText("Rocks\nGenerating");
             float phaseTimer = waveDuration;
             isSpawning = true;
             StartCoroutine(SpawnAsteroidsRoutine());
@@ -79,7 +79,7 @@ public class AssessmentWaveSpawner : MonoBehaviour
             isSpawning = false;
 
             // CLEANUP PHASE 
-            GameManager.Instance.SetTimerSubText("Debris Cleanup");
+            GameManager.Instance.SetTimerSubText("Debris\nCleanup");
             float cleanupTimer = cleanupDuration;
 
             while (GameObject.FindGameObjectsWithTag("Enemy").Length > 0 && GameManager.Instance.isLevelActive && cleanupTimer > 0)
