@@ -18,7 +18,7 @@ public class AssessmentWaveSpawner : MonoBehaviour
     [Header("Initial Difficulty Parameters")]
     public float startingSpawnInterval = 1.0f;
     public float startingRockSpeed = 50f;
-    public float adaptationPercentage = 0.1f;
+    public float adaptationPercentage = 0.05f;
 
     private int currentWave = 0;
     private float currentSpawnInterval;
@@ -37,7 +37,6 @@ public class AssessmentWaveSpawner : MonoBehaviour
     {
         while (GameManager.Instance == null || !GameManager.Instance.isLevelActive) yield return null;
 
-        // --- NEW: Print the Initial Values to Excel exactly once ---
         if (AssessmentLogger.Instance != null)
         {
             AssessmentLogger.Instance.LogInitialValues(startingSpawnInterval, startingRockSpeed, adaptationPercentage);
@@ -54,17 +53,15 @@ public class AssessmentWaveSpawner : MonoBehaviour
             GameManager.Instance.ResetWaveScore();
             GameManager.Instance.currentRockSpeed = currentRockSpeed;
 
-            // ANNOUNCE WAVE
             GameManager.Instance.ShowAnnouncer("ASSESSMENT WAVE " + currentWave);
             yield return new WaitForSeconds(2f);
             GameManager.Instance.HideAnnouncer();
 
-            // --- TIME TRACKING STARTS HERE ---
             string waveStartTimeStamp = System.DateTime.Now.ToString("HH:mm:ss");
             float internalStartTime = Time.time;
 
             // SPAWNING PHASE
-            GameManager.Instance.SetTimerSubText("Rocks\nGenerating");
+            GameManager.Instance.SetTimerSubText("Rocks Generating");
             float phaseTimer = waveDuration;
             isSpawning = true;
             StartCoroutine(SpawnAsteroidsRoutine());
@@ -78,8 +75,8 @@ public class AssessmentWaveSpawner : MonoBehaviour
             }
             isSpawning = false;
 
-            // CLEANUP PHASE 
-            GameManager.Instance.SetTimerSubText("Debris\nCleanup");
+            // CLEANUP PHASE
+            GameManager.Instance.SetTimerSubText("Debris Cleanup");
             float cleanupTimer = cleanupDuration;
 
             while (GameObject.FindGameObjectsWithTag("Enemy").Length > 0 && GameManager.Instance.isLevelActive && cleanupTimer > 0)
@@ -93,30 +90,28 @@ public class AssessmentWaveSpawner : MonoBehaviour
             GameObject[] missedRocks = GameObject.FindGameObjectsWithTag("Enemy");
             foreach (GameObject rock in missedRocks) Destroy(rock);
 
-            // --- TIME TRACKING ENDS HERE ---
             string waveEndTimeStamp = System.DateTime.Now.ToString("HH:mm:ss");
             float trueDuration = Time.time - internalStartTime;
 
-            // PERFORMANCE CALCULATION & ADAPTATION 
             // --- 5. PERFORMANCE CALCULATION & ADAPTATION ---
-            int maxPossibleScore = rocksSpawnedThisWave * GameManager.Instance.scoreRewardPerRock;
+            int rocksDestroyed = GameManager.Instance.rocksDestroyedThisWave;
             int actualScore = GameManager.Instance.currentWaveScore;
 
-            float performancePercent = maxPossibleScore > 0 ? ((float)actualScore / maxPossibleScore) * 100f : 0f;
-            string decision = "Maintained";
+            // The pure Hits vs Spawned math
+            float performancePercent = rocksSpawnedThisWave > 0 ? ((float)rocksDestroyed / rocksSpawnedThisWave) * 100f : 0f;
 
-            // Get the exact percentage from the Inspector to use in the text log (e.g., 0.1 * 100 = 10)
+            string decision = "Maintained";
             int displayPercent = Mathf.RoundToInt(adaptationPercentage * 100f);
 
             if (performancePercent < 60f)
             {
-                decision = $"Eased (-{displayPercent}%)"; // Dynamically writes -10%
+                decision = $"Decreased (-{displayPercent}%)"; // Replaced "Eased"
                 currentRockSpeed *= (1f - adaptationPercentage);
                 currentSpawnInterval *= (1f + adaptationPercentage);
             }
             else if (performancePercent > 80f)
             {
-                decision = $"Cranked (+{displayPercent}%)"; // Dynamically writes +10%
+                decision = $"Increased (+{displayPercent}%)"; // Replaced "Cranked"
                 currentRockSpeed *= (1f + adaptationPercentage);
                 currentSpawnInterval *= (1f - adaptationPercentage);
             }
@@ -127,11 +122,11 @@ public class AssessmentWaveSpawner : MonoBehaviour
                 AssessmentLogger.Instance.LogWaveData(
                     currentWave, waveStartTimeStamp, waveEndTimeStamp, trueDuration,
                     currentSpawnInterval, currentRockSpeed,
-                    rocksSpawnedThisWave, maxPossibleScore, actualScore, performancePercent, decision
+                    rocksSpawnedThisWave, rocksDestroyed, actualScore, performancePercent, decision
                 );
             }
 
-            // BREAK PHASE (Not counted in the duration)
+            // BREAK PHASE
             if (currentWave < totalWaves && GameManager.Instance.isLevelActive)
             {
                 GameManager.Instance.SetTimerSubText("Calculating Next Wave...");
@@ -149,13 +144,12 @@ public class AssessmentWaveSpawner : MonoBehaviour
             }
         }
 
-        // ASSESSMENT COMPLETE
         if (GameManager.Instance.isLevelActive)
         {
             GameManager.Instance.SetTimerSubText("");
             GameManager.Instance.ShowDashboardDashes();
 
-            GameManager.Instance.ShowAnnouncer("ASSESSMENT COMPLETE\n<size=50%>DATA LOGGED SUCESSFULLY</size>");
+            GameManager.Instance.ShowAnnouncer("ASSESSMENT COMPLETE\n<size=50%>DATA LOGGED SUCCESSFULLY</size>");
             yield return new WaitForSeconds(4f);
             GameManager.Instance.LevelComplete();
         }
@@ -182,10 +176,9 @@ public class AssessmentWaveSpawner : MonoBehaviour
         Vector3 finalSpawnPos = transform.position + randomPos;
         Instantiate(asteroidPrefab, finalSpawnPos, Random.rotation);
     }
-    // --- ADD THIS AT THE BOTTOM OF YOUR SPAWNER SCRIPT ---
+
     void OnDrawGizmosSelected()
     {
-        // Creates a semi-transparent red box in the Scene view so you can see your spawn area
         Gizmos.color = new Color(1f, 0f, 0f, 0.4f);
         Gizmos.DrawCube(transform.position, spawnAreaSize);
     }

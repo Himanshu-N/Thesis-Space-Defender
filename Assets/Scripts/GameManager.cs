@@ -39,6 +39,7 @@ public class GameManager : MonoBehaviour
     [Header("Game Stats & Difficulty")]
     public int totalScore = 0;
     public int currentWaveScore = 0;
+    public int rocksDestroyedThisWave = 0; // --- NEW VARIABLE ---
     public int scoreRewardPerRock = 100; // NEW: Editable in the Inspector!
     public int totalRoundsFired = 0;
     public float totalTimePlaying = 0f;
@@ -95,6 +96,7 @@ public class GameManager : MonoBehaviour
     public void ResetWaveScore()
     {
         currentWaveScore = 0;
+        rocksDestroyedThisWave = 0; // --- RESET EVERY WAVE ---
     }
 
     public void AddScore(int amount)
@@ -102,6 +104,11 @@ public class GameManager : MonoBehaviour
         if (currentState != GameState.Playing) return;
         totalScore += amount;
         currentWaveScore += amount;
+
+        // --- COUNT THE HIT ---
+        // Assuming AddScore is ONLY called when you shoot a rock
+        rocksDestroyedThisWave++;
+
         UpdateScoreUI();
     }
 
