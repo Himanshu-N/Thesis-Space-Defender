@@ -49,7 +49,7 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
-    - _Exposure: 0.89
+    - _Exposure: 0.7
     - _Rotation: 0
     m_Colors:
     - _Tint: {r: 0.79622644, g: 0.7500839, b: 0.7316269, a: 0.5}

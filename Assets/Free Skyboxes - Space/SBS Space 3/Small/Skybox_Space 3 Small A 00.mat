@@ -7,7 +7,7 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: Skybox_Space 3 Small H 03
+  m_Name: Skybox_Space 3 Small A 00
   m_Shader: {fileID: 104, guid: 0000000000000000f000000000000000, type: 0}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
@@ -50,7 +50,7 @@ Material:
     m_Ints: []
     m_Floats:
     - _Exposure: 0.8
-    - _Rotation: 0
+    - _Rotation: 282
     m_Colors:
-    - _Tint: {r: 0.8036121, g: 0.5415094, b: 1, a: 0.5}
+    - _Tint: {r: 0.81886786, g: 0.81886786, b: 0.81886786, a: 1}
   m_BuildTextureStacks: []

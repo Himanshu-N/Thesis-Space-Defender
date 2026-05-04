@@ -26,6 +26,11 @@ public class AssessmentWaveSpawner : MonoBehaviour
     private int rocksSpawnedThisWave = 0;
     private bool isSpawning = false;
 
+    // Track final wave stats for baseline calculation
+    private float finalWavePerformance = 0f;
+    private float finalWaveSpeed = 0f;
+    private float finalWaveSpawn = 0f;
+
     void Start()
     {
         currentSpawnInterval = startingSpawnInterval;
@@ -53,6 +58,10 @@ public class AssessmentWaveSpawner : MonoBehaviour
             GameManager.Instance.ResetWaveScore();
             GameManager.Instance.currentRockSpeed = currentRockSpeed;
 
+            // Capture the exact stats the player is playing THIS wave at
+            finalWaveSpeed = currentRockSpeed;
+            finalWaveSpawn = currentSpawnInterval;
+
             GameManager.Instance.ShowAnnouncer("ASSESSMENT WAVE " + currentWave);
             yield return new WaitForSeconds(2f);
             GameManager.Instance.HideAnnouncer();
@@ -61,7 +70,7 @@ public class AssessmentWaveSpawner : MonoBehaviour
             float internalStartTime = Time.time;
 
             // SPAWNING PHASE
-            GameManager.Instance.SetTimerSubText("Rocks Generating");
+            GameManager.Instance.SetTimerSubText("Rocks\nGenerating");
             float phaseTimer = waveDuration;
             isSpawning = true;
             StartCoroutine(SpawnAsteroidsRoutine());
@@ -76,7 +85,7 @@ public class AssessmentWaveSpawner : MonoBehaviour
             isSpawning = false;
 
             // CLEANUP PHASE
-            GameManager.Instance.SetTimerSubText("Debris Cleanup");
+            GameManager.Instance.SetTimerSubText("Debris\nCleanup");
             float cleanupTimer = cleanupDuration;
 
             while (GameObject.FindGameObjectsWithTag("Enemy").Length > 0 && GameManager.Instance.isLevelActive && cleanupTimer > 0)
@@ -93,25 +102,27 @@ public class AssessmentWaveSpawner : MonoBehaviour
             string waveEndTimeStamp = System.DateTime.Now.ToString("HH:mm:ss");
             float trueDuration = Time.time - internalStartTime;
 
-            // --- 5. PERFORMANCE CALCULATION & ADAPTATION ---
+            // --- PERFORMANCE CALCULATION ---
             int rocksDestroyed = GameManager.Instance.rocksDestroyedThisWave;
             int actualScore = GameManager.Instance.currentWaveScore;
 
-            // The pure Hits vs Spawned math
             float performancePercent = rocksSpawnedThisWave > 0 ? ((float)rocksDestroyed / rocksSpawnedThisWave) * 100f : 0f;
+
+            // Save this to calculate the baseline at the end of the game
+            finalWavePerformance = performancePercent;
 
             string decision = "Maintained";
             int displayPercent = Mathf.RoundToInt(adaptationPercentage * 100f);
 
             if (performancePercent < 60f)
             {
-                decision = $"Decreased (-{displayPercent}%)"; // Replaced "Eased"
+                decision = $"Decreased (-{displayPercent}%)";
                 currentRockSpeed *= (1f - adaptationPercentage);
                 currentSpawnInterval *= (1f + adaptationPercentage);
             }
             else if (performancePercent > 80f)
             {
-                decision = $"Increased (+{displayPercent}%)"; // Replaced "Cranked"
+                decision = $"Increased (+{displayPercent}%)";
                 currentRockSpeed *= (1f + adaptationPercentage);
                 currentSpawnInterval *= (1f - adaptationPercentage);
             }
@@ -121,7 +132,7 @@ public class AssessmentWaveSpawner : MonoBehaviour
             {
                 AssessmentLogger.Instance.LogWaveData(
                     currentWave, waveStartTimeStamp, waveEndTimeStamp, trueDuration,
-                    currentSpawnInterval, currentRockSpeed,
+                    finalWaveSpawn, finalWaveSpeed, // Using the captured stats for logging
                     rocksSpawnedThisWave, rocksDestroyed, actualScore, performancePercent, decision
                 );
             }
@@ -144,14 +155,48 @@ public class AssessmentWaveSpawner : MonoBehaviour
             }
         }
 
+        // --- ASSESSMENT COMPLETE: CALCULATE AND SAVE BASELINE ---
         if (GameManager.Instance.isLevelActive)
         {
+            CalculateAndSaveBaseline();
+
             GameManager.Instance.SetTimerSubText("");
             GameManager.Instance.ShowDashboardDashes();
-
-            GameManager.Instance.ShowAnnouncer("ASSESSMENT COMPLETE\n<size=50%>DATA LOGGED SUCCESSFULLY</size>");
+            GameManager.Instance.ShowAnnouncer("ASSESSMENT COMPLETE\n<size=50%>BASELINE SAVED TO PROFILE</size>");
             yield return new WaitForSeconds(4f);
             GameManager.Instance.LevelComplete();
+        }
+    }
+
+    void CalculateAndSaveBaseline()
+    {
+        float calculatedBaselineSpeed = finalWaveSpeed;
+        float calculatedBaselineSpawn = finalWaveSpawn;
+
+        // Apply the strict 10% rule based on Wave 10's performance
+        if (finalWavePerformance < 60f)
+        {
+            calculatedBaselineSpeed *= 0.90f; // 10% slower
+            calculatedBaselineSpawn *= 1.10f; // 10% more time between rocks
+        }
+        else if (finalWavePerformance > 80f)
+        {
+            calculatedBaselineSpeed *= 1.10f; // 10% faster
+            calculatedBaselineSpawn *= 0.90f; // 10% less time between rocks
+        }
+        // If between 60% and 80%, it remains exactly what it was in Wave 10 (Maintained)
+
+        // Save it permanently to the Participant Manager
+        if (ParticipantManager.Instance != null && ParticipantManager.Instance.currentProfile != null)
+        {
+            ParticipantManager.Instance.currentProfile.baselineSpeed = calculatedBaselineSpeed;
+            ParticipantManager.Instance.currentProfile.baselineSpawnRate = calculatedBaselineSpawn;
+            ParticipantManager.Instance.currentProfile.hasCompletedAssessment = true;
+
+            // Write it to the JSON file
+            ParticipantManager.Instance.SaveProfile();
+
+            Debug.Log($"<color=green>BASELINE SAVED:</color> Speed: {calculatedBaselineSpeed:F2}, Spawn: {calculatedBaselineSpawn:F2}");
         }
     }
 

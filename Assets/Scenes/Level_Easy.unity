@@ -26,7 +26,7 @@ RenderSettings:
   m_AmbientIntensity: 1
   m_AmbientMode: 3
   m_SubtractiveShadowColor: {r: 1, g: 1, b: 1, a: 1}
-  m_SkyboxMaterial: {fileID: 2100000, guid: 58c2ed33640e39445b15372e27622143, type: 2}
+  m_SkyboxMaterial: {fileID: 2100000, guid: 1c90098facccfe64ba519067cb6fb27c, type: 2}
   m_HaloStrength: 0.5
   m_FlareStrength: 1
   m_FlareFadeSpeed: 3
@@ -12773,36 +12773,14 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2097171999}
-  - component: {fileID: 2097171998}
+  - component: {fileID: 2097172000}
   m_Layer: 0
-  m_Name: AssessmentWaveSpawner
+  m_Name: WaveSpawner
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &2097171998
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2097171997}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6848c1d9cc4528d4f9b32e4c889ad4ed, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  asteroidPrefab: {fileID: 7437889339238721774, guid: a028a9caf7ccf2443a238296ded73a04,
-    type: 3}
-  spawnAreaSize: {x: 25, y: 20, z: 60}
-  totalWaves: 10
-  waveDuration: 3
-  breakDuration: 1
-  cleanupDuration: 15
-  startingSpawnInterval: 3
-  startingRockSpeed: 15
-  adaptationPercentage: 0.1
 --- !u!4 &2097171999
 Transform:
   m_ObjectHideFlags: 0
@@ -12818,6 +12796,28 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &2097172000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2097171997}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c78eaad6eee63ea4ab4f9dc81b250dfa, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  currentDifficulty: 0
+  asteroidPrefabs:
+  - {fileID: 7437889339238721774, guid: a028a9caf7ccf2443a238296ded73a04, type: 3}
+  spawnAreaSize: {x: 25, y: 20, z: 60}
+  totalWaves: 3
+  waveDuration: 80
+  breakDuration: 10
+  cleanupDuration: 15
+  fallbackSpeed: 25
+  fallbackSpawnRate: 2
 --- !u!1 &2098310957
 GameObject:
   m_ObjectHideFlags: 0
