@@ -1,3 +1,4 @@
+using UnityEngine.SceneManagement;
 using UnityEngine;
 using TMPro;
 using UnityEngine.UI;
@@ -79,6 +80,16 @@ public class GameManager : MonoBehaviour
     void Update()
     {
         if (currentState == GameState.Playing) totalTimePlaying += Time.deltaTime;
+
+        if (Input.GetKeyDown(KeyCode.P))
+        {
+            TogglePause();
+        }
+
+        if (Input.GetKeyDown(KeyCode.M))
+        {
+            ReturnToMainMenu();
+        }
     }
 
 
@@ -222,12 +233,18 @@ public class GameManager : MonoBehaviour
         currentState = GameState.GameOver;
         isLevelActive = false;
 
+        // Turn off alarms and the HUD
         if (alarmLight != null) alarmLight.intensity = 0f;
         if (hudCanvas != null) hudCanvas.SetActive(false);
         if (centerAnnouncerObject != null) centerAnnouncerObject.SetActive(false);
-        if (endScreenCanvas != null) endScreenCanvas.SetActive(true);
 
-        if (endTitleText != null) endTitleText.text = "ASSESSMENT COMPLETE";
+        // --- CHANGED: Explicitly keep the End Screen hidden ---
+        if (endScreenCanvas != null) endScreenCanvas.SetActive(false);
+
+        // (The game will now calculate the stats in the background for the CSV, 
+        // but the participant will just see the quiet environment until you press 'M' to return to the menu).
+
+        if (endTitleText != null) endTitleText.text = "PROTOCOL COMPLETE";
         if (finalScoreText != null) finalScoreText.text = "Final Score: " + totalScore;
         if (finalRoundsText != null) finalRoundsText.text = "Missiles Fired: " + totalRoundsFired;
 
@@ -237,5 +254,34 @@ public class GameManager : MonoBehaviour
             int secs = Mathf.FloorToInt(totalTimePlaying - mins * 60);
             finalTimeText.text = string.Format("Total Time: {0:00}:{1:00}", mins, secs);
         }
+    }
+
+    // --- HIDDEN CONTROL METHODS ---
+    private bool isPaused = false;
+
+    public void TogglePause()
+    {
+        isPaused = !isPaused;
+
+        // Time.timeScale controls the physics and speed of the entire game
+        Time.timeScale = isPaused ? 0f : 1f;
+
+        // Pausing the AudioListener stops all sound effects from playing while frozen
+        AudioListener.pause = isPaused;
+
+        Debug.Log(isPaused ? "<color=yellow>RESEARCHER PAUSE ACTIVE</color>" : "<color=yellow>RESEARCHER PAUSE LIFTED</color>");
+    }
+
+    public void ReturnToMainMenu()
+    {
+        // CRITICAL: We must reset time back to normal before leaving, 
+        // otherwise the Main Menu will be frozen when it loads!
+        Time.timeScale = 1f;
+        AudioListener.pause = false;
+
+        Debug.Log("<color=yellow>RESEARCHER OVERRIDE: Returning to Menu</color>");
+
+        // Change "MainMenu" to whatever your actual menu scene is named!
+        SceneManager.LoadScene("MainMenu");
     }
 }

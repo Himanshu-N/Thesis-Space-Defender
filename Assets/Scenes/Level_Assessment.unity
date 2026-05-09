@@ -1084,7 +1084,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 97280966}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 840f98e2742fd124abe7c510c1f1ae75, type: 3}
+  m_Script: {fileID: 11500000, guid: d9ebb0ecfdc7b7b4c830f9e0063aa49b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
 --- !u!1 &102200057
@@ -12796,8 +12796,8 @@ MonoBehaviour:
   asteroidPrefab: {fileID: 7437889339238721774, guid: a028a9caf7ccf2443a238296ded73a04,
     type: 3}
   spawnAreaSize: {x: 25, y: 20, z: 60}
-  totalWaves: 10
-  waveDuration: 3
+  totalWaves: 1
+  waveDuration: 1
   breakDuration: 1
   cleanupDuration: 15
   startingSpawnInterval: 3

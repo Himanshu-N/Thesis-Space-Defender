@@ -7,74 +7,82 @@ public class DifficultyWaveSpawner : MonoBehaviour
 
     [Header("Level Settings")]
     public DifficultyMode currentDifficulty;
-
-    [Tooltip("Add as many prefabs as you want. The game will pick one randomly each time!")]
     public GameObject[] asteroidPrefabs;
 
     [Header("Spawn Area Setup")]
     public Vector3 spawnAreaSize = new Vector3(50f, 20f, 0f);
 
     [Header("Wave Progression")]
-    public int totalWaves = 5; // You can make these levels shorter or longer than the assessment
+    public int totalWaves = 5;
     public float waveDuration = 60f;
     public float breakDuration = 10f;
     public float cleanupDuration = 15f;
+
+    [Header("Difficulty Tuning (Baseline Offset)")]
+    public float easyAdjustment = 0.30f;
+    public float hardAdjustment = 0.05f;
+
+    [Header("Intra-Wave Progression")]
+    [Tooltip("How much the spawn time decreases every wave (0.05 = 5%)")]
+    public float waveSpawnDecrease = 0.05f; // NEW: 5% Faster Spawns per wave
+    [Tooltip("How much the rock speed increases every wave (HARD MODE ONLY)")]
+    public float hardWaveSpeedIncrease = 0.05f; // NEW: 5% Faster Rocks per wave
 
     [Header("Testing Fallbacks (If No Profile Found)")]
     public float fallbackSpeed = 25f;
     public float fallbackSpawnRate = 2f;
 
-    // Private tracking variables
     private int currentWave = 0;
-    private float finalCalculatedSpawnRate;
-    private float finalCalculatedSpeed;
+
+    // Tracks the current parameters as they change wave by wave
+    private float currentWaveSpawnRate;
+    private float currentWaveSpeed;
+
+    private int rocksSpawnedThisWave = 0;
     private bool isSpawning = false;
 
     void Start()
     {
-        CalculatePersonalizedDifficulty();
+        if (DataLogger.Instance != null) DataLogger.Instance.InitializeLogger(currentDifficulty.ToString());
+
+        CalculateInitialDifficulty();
         StartCoroutine(WaveCycleRoutine());
     }
 
-    void CalculatePersonalizedDifficulty()
+    void CalculateInitialDifficulty()
     {
         float baseSpeed = fallbackSpeed;
         float baseSpawn = fallbackSpawnRate;
 
-        // 1. Check if the participant has a saved baseline
         if (ParticipantManager.Instance != null &&
             ParticipantManager.Instance.currentProfile != null &&
             ParticipantManager.Instance.currentProfile.hasCompletedAssessment)
         {
             baseSpeed = ParticipantManager.Instance.currentProfile.baselineSpeed;
             baseSpawn = ParticipantManager.Instance.currentProfile.baselineSpawnRate;
-            Debug.Log($"<color=cyan>Loaded Baseline for {ParticipantManager.Instance.currentProfile.participantID}:</color> Speed {baseSpeed:F2}, Spawn {baseSpawn:F2}");
-        }
-        else
-        {
-            Debug.LogWarning("No Assessment Baseline found! Using fallback Inspector values.");
         }
 
-        // 2. Apply the +/- 15% Difficulty Multipliers
         switch (currentDifficulty)
         {
             case DifficultyMode.Easy:
-                finalCalculatedSpeed = baseSpeed * 0.85f;      // 15% slower
-                finalCalculatedSpawnRate = baseSpawn * 1.15f;  // 15% more time between rocks
+                currentWaveSpeed = baseSpeed * (1f - easyAdjustment);
+                currentWaveSpawnRate = baseSpawn * (1f + easyAdjustment);
                 break;
-
             case DifficultyMode.Medium:
-                finalCalculatedSpeed = baseSpeed;              // Exactly the baseline
-                finalCalculatedSpawnRate = baseSpawn;          // Exactly the baseline
+                currentWaveSpeed = baseSpeed;
+                currentWaveSpawnRate = baseSpawn;
                 break;
-
             case DifficultyMode.Hard:
-                finalCalculatedSpeed = baseSpeed * 1.15f;      // 15% faster
-                finalCalculatedSpawnRate = baseSpawn * 0.85f;  // 15% less time between rocks
+                currentWaveSpeed = baseSpeed * (1f + hardAdjustment);
+                currentWaveSpawnRate = baseSpawn * (1f - hardAdjustment);
                 break;
         }
 
-        Debug.Log($"<color=green>Level Set to {currentDifficulty}:</color> Final Speed {finalCalculatedSpeed:F2}, Final Spawn {finalCalculatedSpawnRate:F2}");
+        // Log the initial calculated parameters before any intra-wave progression happens
+        if (DataLogger.Instance != null)
+        {
+            DataLogger.Instance.LogDifficultyHeader(currentWaveSpawnRate, currentWaveSpeed, waveSpawnDecrease, hardWaveSpeedIncrease);
+        }
     }
 
     IEnumerator WaveCycleRoutine()
@@ -87,16 +95,39 @@ public class DifficultyWaveSpawner : MonoBehaviour
             currentWave++;
             GameManager.Instance.UpdateWaveUI(currentWave, totalWaves);
 
+            // --- NEW: INTRA-WAVE PROGRESSION MATH ---
+            if (currentWave > 1) // Don't apply to the very first wave
+            {
+                // All levels: Reduce time between spawns by 5%
+                currentWaveSpawnRate *= (1f - waveSpawnDecrease);
+
+                // Hard level only: Increase rock speed by 5%
+                if (currentDifficulty == DifficultyMode.Hard)
+                {
+                    currentWaveSpeed *= (1f + hardWaveSpeedIncrease);
+                }
+            }
+
+            rocksSpawnedThisWave = 0;
             GameManager.Instance.ResetWaveScore();
 
-            // Push the calculated speed to the GameManager so rocks can read it!
-            GameManager.Instance.currentRockSpeed = finalCalculatedSpeed;
+            // Assign the newly calculated speed to the rocks
+            GameManager.Instance.currentRockSpeed = currentWaveSpeed;
 
-            GameManager.Instance.ShowAnnouncer(currentDifficulty.ToString().ToUpper() + " LEVEL - WAVE " + currentWave);
+            string levelCodeName = "";
+            if (currentDifficulty == DifficultyMode.Easy) levelCodeName = "ORBIT";
+            else if (currentDifficulty == DifficultyMode.Medium) levelCodeName = "VELOCITY";
+            else if (currentDifficulty == DifficultyMode.Hard) levelCodeName = "LUNAR";
+
+            GameManager.Instance.ShowAnnouncer(levelCodeName + " PROTOCOL\nWAVE " + currentWave);
             yield return new WaitForSeconds(2f);
             GameManager.Instance.HideAnnouncer();
 
-            // SPAWNING PHASE
+            // --- TIME TRACKING ---
+            string waveStartTimeStamp = System.DateTime.Now.ToString("HH:mm:ss");
+            float internalStartTime = Time.time;
+
+            // SPAWNING
             GameManager.Instance.SetTimerSubText("Rocks Generating");
             float phaseTimer = waveDuration;
             isSpawning = true;
@@ -111,7 +142,7 @@ public class DifficultyWaveSpawner : MonoBehaviour
             }
             isSpawning = false;
 
-            // CLEANUP PHASE
+            // CLEANUP
             GameManager.Instance.SetTimerSubText("Debris Cleanup");
             float cleanupTimer = cleanupDuration;
 
@@ -126,7 +157,25 @@ public class DifficultyWaveSpawner : MonoBehaviour
             GameObject[] missedRocks = GameObject.FindGameObjectsWithTag("Enemy");
             foreach (GameObject rock in missedRocks) Destroy(rock);
 
-            // BREAK PHASE
+            string waveEndTimeStamp = System.DateTime.Now.ToString("HH:mm:ss");
+            float trueDuration = Time.time - internalStartTime;
+
+            // --- PERFORMANCE CALCULATION ---
+            int rocksDestroyed = GameManager.Instance.rocksDestroyedThisWave;
+            int actualScore = GameManager.Instance.currentWaveScore;
+            float performancePercent = rocksSpawnedThisWave > 0 ? ((float)rocksDestroyed / rocksSpawnedThisWave) * 100f : 0f;
+
+            // Log the exact Speed and Spawn Rate that was used for THIS specific wave
+            if (DataLogger.Instance != null)
+            {
+                DataLogger.Instance.LogDifficultyWave(
+                    currentWave, waveStartTimeStamp, waveEndTimeStamp, trueDuration,
+                    currentWaveSpawnRate, currentWaveSpeed,
+                    rocksSpawnedThisWave, rocksDestroyed, actualScore, performancePercent
+                );
+            }
+
+            // BREAK
             if (currentWave < totalWaves && GameManager.Instance.isLevelActive)
             {
                 GameManager.Instance.SetTimerSubText("Calculating Next Wave...");
@@ -147,7 +196,6 @@ public class DifficultyWaveSpawner : MonoBehaviour
         // LEVEL COMPLETE
         if (GameManager.Instance.isLevelActive)
         {
-            // Mark this specific difficulty as completed in the profile!
             if (ParticipantManager.Instance != null && ParticipantManager.Instance.currentProfile != null)
             {
                 if (currentDifficulty == DifficultyMode.Easy) ParticipantManager.Instance.currentProfile.hasCompletedEasy = true;
@@ -158,7 +206,7 @@ public class DifficultyWaveSpawner : MonoBehaviour
 
             GameManager.Instance.SetTimerSubText("");
             GameManager.Instance.ShowDashboardDashes();
-            GameManager.Instance.ShowAnnouncer("LEVEL COMPLETE\n<size=50%>GREAT JOB</size>");
+            GameManager.Instance.ShowAnnouncer("PROTOCOL COMPLETE\n<size=50%>GREAT JOB</size>");
             yield return new WaitForSeconds(4f);
             GameManager.Instance.LevelComplete();
         }
@@ -169,18 +217,16 @@ public class DifficultyWaveSpawner : MonoBehaviour
         while (isSpawning)
         {
             SpawnSingleAsteroid();
-            yield return new WaitForSeconds(finalCalculatedSpawnRate);
+            rocksSpawnedThisWave++;
+            yield return new WaitForSeconds(currentWaveSpawnRate);
         }
     }
 
     void SpawnSingleAsteroid()
     {
         if (asteroidPrefabs == null || asteroidPrefabs.Length == 0) return;
-
-        // --- NEW: Picks a random prefab from your list! ---
         int randomIndex = Random.Range(0, asteroidPrefabs.Length);
         GameObject selectedPrefab = asteroidPrefabs[randomIndex];
-
         Vector3 randomPos = new Vector3(
             Random.Range(-spawnAreaSize.x / 2, spawnAreaSize.x / 2),
             Random.Range(-spawnAreaSize.y / 2, spawnAreaSize.y / 2),
@@ -192,7 +238,7 @@ public class DifficultyWaveSpawner : MonoBehaviour
 
     void OnDrawGizmosSelected()
     {
-        Gizmos.color = new Color(0f, 1f, 0f, 0.4f); // Green box for gameplay levels
+        Gizmos.color = new Color(0f, 1f, 0f, 0.4f);
         Gizmos.DrawCube(transform.position, spawnAreaSize);
     }
 }

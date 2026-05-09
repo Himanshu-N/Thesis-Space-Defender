@@ -33,6 +33,9 @@ public class AssessmentWaveSpawner : MonoBehaviour
 
     void Start()
     {
+        // 1. Initialize the Logger and create the folder
+        if (DataLogger.Instance != null) DataLogger.Instance.InitializeLogger("Assessment");
+
         currentSpawnInterval = startingSpawnInterval;
         currentRockSpeed = startingRockSpeed;
         StartCoroutine(WaveCycleRoutine());
@@ -42,9 +45,10 @@ public class AssessmentWaveSpawner : MonoBehaviour
     {
         while (GameManager.Instance == null || !GameManager.Instance.isLevelActive) yield return null;
 
-        if (AssessmentLogger.Instance != null)
+        // 2. Log the Assessment Header
+        if (DataLogger.Instance != null)
         {
-            AssessmentLogger.Instance.LogInitialValues(startingSpawnInterval, startingRockSpeed, adaptationPercentage);
+            DataLogger.Instance.LogAssessmentHeader(startingSpawnInterval, startingRockSpeed, adaptationPercentage);
         }
 
         yield return new WaitForSeconds(2f);
@@ -128,11 +132,11 @@ public class AssessmentWaveSpawner : MonoBehaviour
             }
 
             // --- LOG TO EXCEL ---
-            if (AssessmentLogger.Instance != null)
+            if (DataLogger.Instance != null)
             {
-                AssessmentLogger.Instance.LogWaveData(
+                DataLogger.Instance.LogAssessmentWave(
                     currentWave, waveStartTimeStamp, waveEndTimeStamp, trueDuration,
-                    finalWaveSpawn, finalWaveSpeed, // Using the captured stats for logging
+                    finalWaveSpawn, finalWaveSpeed,
                     rocksSpawnedThisWave, rocksDestroyed, actualScore, performancePercent, decision
                 );
             }
