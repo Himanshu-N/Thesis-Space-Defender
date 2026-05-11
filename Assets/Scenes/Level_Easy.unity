@@ -12678,11 +12678,13 @@ MonoBehaviour:
   - {fileID: 7437889339238721774, guid: a028a9caf7ccf2443a238296ded73a04, type: 3}
   spawnAreaSize: {x: 25, y: 20, z: 60}
   totalWaves: 3
-  waveDuration: 20
-  breakDuration: 1
+  waveDuration: 80
+  breakDuration: 10
   cleanupDuration: 15
   easyAdjustment: 0.3
   hardAdjustment: 0.05
+  waveSpawnDecrease: 0.05
+  hardWaveSpeedIncrease: 0.05
   fallbackSpeed: 15
   fallbackSpawnRate: 3
 --- !u!1 &2098310957

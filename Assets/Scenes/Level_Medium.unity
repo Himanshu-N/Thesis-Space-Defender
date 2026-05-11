@@ -13038,9 +13038,8 @@ MonoBehaviour:
   cleanupDuration: 15
   easyAdjustment: 0.3
   hardAdjustment: 0.05
-  spawnRateDecreasePerWave: 0.2
-  hardSpeedIncreasePerWave: 5
-  minimumSpawnRate: 0.4
+  waveSpawnDecrease: 0.05
+  hardWaveSpeedIncrease: 0.05
   fallbackSpeed: 20
   fallbackSpawnRate: 2.5
 --- !u!1 &2098310957

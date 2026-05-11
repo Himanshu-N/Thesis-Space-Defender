@@ -124,7 +124,7 @@ public class DifficultyWaveSpawner : MonoBehaviour
             GameManager.Instance.HideAnnouncer();
 
             // --- TIME TRACKING ---
-            string waveStartTimeStamp = System.DateTime.Now.ToString("HH:mm:ss");
+            string waveStartTimeStamp = System.DateTime.Now.ToString("HH:mm:ss.fff");
             float internalStartTime = Time.time;
 
             // SPAWNING
@@ -157,7 +157,7 @@ public class DifficultyWaveSpawner : MonoBehaviour
             GameObject[] missedRocks = GameObject.FindGameObjectsWithTag("Enemy");
             foreach (GameObject rock in missedRocks) Destroy(rock);
 
-            string waveEndTimeStamp = System.DateTime.Now.ToString("HH:mm:ss");
+            string waveEndTimeStamp = System.DateTime.Now.ToString("HH:mm:ss.fff");
             float trueDuration = Time.time - internalStartTime;
 
             // --- PERFORMANCE CALCULATION ---

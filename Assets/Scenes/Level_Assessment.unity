@@ -12796,9 +12796,9 @@ MonoBehaviour:
   asteroidPrefab: {fileID: 7437889339238721774, guid: a028a9caf7ccf2443a238296ded73a04,
     type: 3}
   spawnAreaSize: {x: 25, y: 20, z: 60}
-  totalWaves: 1
-  waveDuration: 1
-  breakDuration: 1
+  totalWaves: 10
+  waveDuration: 45
+  breakDuration: 10
   cleanupDuration: 15
   startingSpawnInterval: 3
   startingRockSpeed: 15

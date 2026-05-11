@@ -7,6 +7,10 @@ public class DataLogger : MonoBehaviour
     private string filePath;
     private bool hasInitializedHeader = false;
 
+    // Track these to inject them into the headers
+    private string currentParticipantID;
+    private string currentLevelName;
+
     void Awake()
     {
         if (Instance == null) Instance = this;
@@ -15,22 +19,24 @@ public class DataLogger : MonoBehaviour
 
     public void InitializeLogger(string levelName)
     {
-        string participantID = "Guest";
+        currentParticipantID = "Guest";
         if (ParticipantManager.Instance != null && ParticipantManager.Instance.currentProfile != null)
         {
-            participantID = ParticipantManager.Instance.currentProfile.participantID;
+            currentParticipantID = ParticipantManager.Instance.currentProfile.participantID;
         }
+        // --- NEW: Tell the Participant Manager what level we are playing! ---
+        if (ParticipantManager.Instance != null) ParticipantManager.Instance.lastPlayedLevel = levelName;
 
-        string folderPath = Path.Combine(Application.persistentDataPath, participantID);
+        currentLevelName = levelName;
+
+        string folderPath = Path.Combine(Application.persistentDataPath, currentParticipantID);
         if (!Directory.Exists(folderPath))
         {
             Directory.CreateDirectory(folderPath);
         }
 
-        string fileName = participantID + "_" + levelName + "_" + System.DateTime.Now.ToString("yyyyMMdd_HHmmss") + ".csv";
+        string fileName = currentParticipantID + "_" + currentLevelName + "_" + System.DateTime.Now.ToString("yyyyMMdd_HHmmss") + ".csv";
         filePath = Path.Combine(folderPath, fileName);
-
-        Debug.Log($"<color=cyan>DATA LOGGER:</color> Saving to folder {folderPath}");
     }
 
     // ==========================================
@@ -39,10 +45,13 @@ public class DataLogger : MonoBehaviour
     public void LogAssessmentHeader(float startSpawnRate, float startSpeed, float adaptPercent)
     {
         if (hasInitializedHeader) return;
+
+        // --- CHANGED: Added Participant and Level to the top row ---
+        string topRow = $"Participant:,{currentParticipantID},Level:,{currentLevelName}\n";
         string initialRow = $"--- INITIAL VALUES ---,Start Spawn Rate:,{startSpawnRate:F2},Start Speed:,{startSpeed:F2},Adaptation:,{adaptPercent * 100}%\n\n";
         string header = "Wave,StartTime,EndTime,TrueDuration(s),SpawnRate,ActualSpeed,RocksSpawned,RocksDestroyed,ActualWaveScore,Performance%,Decision\n";
 
-        File.WriteAllText(filePath, initialRow + header);
+        File.WriteAllText(filePath, topRow + initialRow + header);
         hasInitializedHeader = true;
     }
 
@@ -55,15 +64,16 @@ public class DataLogger : MonoBehaviour
     // ==========================================
     // EASY/MEDIUM/HARD LOGGING
     // ==========================================
-    // CHANGED: Added the two progressive variables to the header
     public void LogDifficultyHeader(float startSpawnRate, float startSpeed, float spawnDecrease, float hardSpeedIncrease)
     {
         if (hasInitializedHeader) return;
 
+        // --- CHANGED: Added Participant and Level to the top row ---
+        string topRow = $"Participant:,{currentParticipantID},Level:,{currentLevelName}\n";
         string initialRow = $"--- LEVEL PARAMETERS ---,Start Spawn Rate:,{startSpawnRate:F2},Start Speed:,{startSpeed:F2},Wave Spawn Decrease:,{spawnDecrease * 100}%,Hard Wave Speed Increase:,{hardSpeedIncrease * 100}%\n\n";
         string header = "Wave,StartTime,EndTime,TrueDuration(s),SpawnRate,ActualSpeed,RocksSpawned,RocksDestroyed,ActualWaveScore,Performance%\n";
 
-        File.WriteAllText(filePath, initialRow + header);
+        File.WriteAllText(filePath, topRow + initialRow + header);
         hasInitializedHeader = true;
     }
 

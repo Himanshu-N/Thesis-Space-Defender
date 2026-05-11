@@ -70,7 +70,7 @@ public class AssessmentWaveSpawner : MonoBehaviour
             yield return new WaitForSeconds(2f);
             GameManager.Instance.HideAnnouncer();
 
-            string waveStartTimeStamp = System.DateTime.Now.ToString("HH:mm:ss");
+            string waveStartTimeStamp = System.DateTime.Now.ToString("HH:mm:ss.fff");
             float internalStartTime = Time.time;
 
             // SPAWNING PHASE
@@ -103,7 +103,7 @@ public class AssessmentWaveSpawner : MonoBehaviour
             GameObject[] missedRocks = GameObject.FindGameObjectsWithTag("Enemy");
             foreach (GameObject rock in missedRocks) Destroy(rock);
 
-            string waveEndTimeStamp = System.DateTime.Now.ToString("HH:mm:ss");
+            string waveEndTimeStamp = System.DateTime.Now.ToString("HH:mm:ss.fff");
             float trueDuration = Time.time - internalStartTime;
 
             // --- PERFORMANCE CALCULATION ---
