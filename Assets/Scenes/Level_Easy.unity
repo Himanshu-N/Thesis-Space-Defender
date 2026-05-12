@@ -12674,8 +12674,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   currentDifficulty: 0
-  asteroidPrefabs:
-  - {fileID: 7437889339238721774, guid: a028a9caf7ccf2443a238296ded73a04, type: 3}
+  asteroidVariants:
+  - prefab: {fileID: 7437889339238721774, guid: a028a9caf7ccf2443a238296ded73a04,
+      type: 3}
+    spawnWeightValue: 1
   spawnAreaSize: {x: 25, y: 20, z: 60}
   totalWaves: 3
   waveDuration: 80

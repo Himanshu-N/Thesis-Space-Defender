@@ -6,7 +6,6 @@ using TMPro;
 public class OpenSignalsImporter : MonoBehaviour
 {
     [Header("Folder Paths")]
-    [Tooltip("Paste the exact folder path where OpenSignals saves its files on your PC")]
     public string openSignalsDirectory = @"C:\Users\YOUR_USERNAME\Documents\OpenSignals (r)evolution\files";
 
     [Header("UI Feedback")]
@@ -22,16 +21,16 @@ public class OpenSignalsImporter : MonoBehaviour
 
         if (!Directory.Exists(openSignalsDirectory))
         {
-            UpdateStatus("<color=red>ERROR</color>", "Error: OpenSignals folder not found. Check the path in Inspector.");
+            UpdateStatus("<color=red>ERROR</color>", "Error: OpenSignals folder not found.");
             return;
         }
 
         string participantID = ParticipantManager.Instance.currentProfile.participantID;
-
-        // --- CHANGED: Grab the level name they just played ---
         string levelName = ParticipantManager.Instance.lastPlayedLevel;
 
-        string destFolder = Path.Combine(Application.persistentDataPath, participantID);
+        // Map path to: ProjectSpaceDefender/data/Participant_{ID}/{LevelName}/
+        string baseDir = Path.Combine(Application.persistentDataPath, "ProjectSpaceDefender", "data");
+        string destFolder = Path.Combine(baseDir, "Participant_" + participantID, levelName);
 
         if (!Directory.Exists(destFolder)) Directory.CreateDirectory(destFolder);
 
@@ -49,34 +48,29 @@ public class OpenSignalsImporter : MonoBehaviour
                                         .FirstOrDefault();
 
             bool filesMoved = false;
-            string timestamp = System.DateTime.Now.ToString("yyyyMMdd_HHmmss");
 
             if (newestConverted != null)
             {
-                // --- CHANGED: Added Level Name to the file! ---
-                string newConvertedName = $"{participantID}_{levelName}_EDA-BVP_Converted_{timestamp}.txt";
-                string destPath = Path.Combine(destFolder, newConvertedName);
+                string destPath = Path.Combine(destFolder, "bvp_converted.txt");
+                // C# File.Move throws an error if the destination exists. We must delete the old one first.
+                if (File.Exists(destPath)) File.Delete(destPath);
 
                 File.Move(newestConverted.FullName, destPath);
                 filesMoved = true;
-                Debug.Log($"Moved Converted: {newConvertedName}");
             }
 
             if (newestRaw != null)
             {
-                // --- CHANGED: Added Level Name to the file! ---
-                string newRawName = $"{participantID}_{levelName}_EDA-BVP_Raw_{timestamp}.txt";
-                string destPath = Path.Combine(destFolder, newRawName);
+                string destPath = Path.Combine(destFolder, "bvp_raw.txt");
+                if (File.Exists(destPath)) File.Delete(destPath);
 
                 File.Move(newestRaw.FullName, destPath);
                 filesMoved = true;
-                Debug.Log($"Moved Raw: {newRawName}");
             }
 
-            // --- CHANGED: Split the UI and Console messages ---
             if (filesMoved)
             {
-                UpdateStatus("<color=green>SYNC SUCCESS</color>", $"SUCCESS: Synced {levelName} EDA files to {participantID} folder.");
+                UpdateStatus("<color=green>SYNC SUCCESS</color>", $"SUCCESS: Synced {levelName} files to Participant_{participantID} folder.");
             }
             else
             {
@@ -89,7 +83,6 @@ public class OpenSignalsImporter : MonoBehaviour
         }
     }
 
-    // --- CHANGED: Now takes two separate messages ---
     void UpdateStatus(string uiMessage, string consoleMessage)
     {
         if (syncStatusText != null)

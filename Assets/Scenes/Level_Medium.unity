@@ -26,7 +26,7 @@ RenderSettings:
   m_AmbientIntensity: 1
   m_AmbientMode: 3
   m_SubtractiveShadowColor: {r: 1, g: 1, b: 1, a: 1}
-  m_SkyboxMaterial: {fileID: 2100000, guid: f7f800d56bc6c824a9bc54e982d4ed0f, type: 2}
+  m_SkyboxMaterial: {fileID: 2100000, guid: 1c90098facccfe64ba519067cb6fb27c, type: 2}
   m_HaloStrength: 0.5
   m_FlareStrength: 1
   m_FlareFadeSpeed: 3
@@ -13027,10 +13027,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c78eaad6eee63ea4ab4f9dc81b250dfa, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  currentDifficulty: 2
-  asteroidPrefabs:
-  - {fileID: 7437889339238721774, guid: a028a9caf7ccf2443a238296ded73a04, type: 3}
-  - {fileID: 7437889339238721774, guid: 7818aa1cb04af3745896219b6bcb75c8, type: 3}
+  currentDifficulty: 1
+  asteroidVariants:
+  - prefab: {fileID: 7437889339238721774, guid: a028a9caf7ccf2443a238296ded73a04,
+      type: 3}
+    spawnWeightValue: 1
+  - prefab: {fileID: 7437889339238721774, guid: 7818aa1cb04af3745896219b6bcb75c8,
+      type: 3}
+    spawnWeightValue: 2
   spawnAreaSize: {x: 25, y: 20, z: 60}
   totalWaves: 3
   waveDuration: 80

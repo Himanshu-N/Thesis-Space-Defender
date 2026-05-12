@@ -17,9 +17,9 @@ public class ParticipantManager : MonoBehaviour
 {
     public static ParticipantManager Instance;
     public ParticipantProfile currentProfile;
-    // --- NEW: Remembers the level we just returned from ---
     public string lastPlayedLevel = "Unknown";
-    private string saveDirectory;
+
+    private string baseDataDirectory;
 
     void Awake()
     {
@@ -33,19 +33,20 @@ public class ParticipantManager : MonoBehaviour
             Destroy(gameObject);
             return;
         }
-        saveDirectory = Application.persistentDataPath;
+
+        // Define the root data folder
+        baseDataDirectory = Path.Combine(Application.persistentDataPath, "data");
     }
 
     public void LoginParticipant(string id)
     {
-        // --- CHANGED: Create the participant folder immediately upon login! ---
-        string folderPath = Path.Combine(saveDirectory, id);
-        if (!Directory.Exists(folderPath))
+        string participantFolder = Path.Combine(baseDataDirectory, "Participant_" + id);
+        if (!Directory.Exists(participantFolder))
         {
-            Directory.CreateDirectory(folderPath);
+            Directory.CreateDirectory(participantFolder);
         }
 
-        string filePath = Path.Combine(folderPath, "Profile_" + id + ".json");
+        string filePath = Path.Combine(participantFolder, "Profile_" + id + ".json");
 
         if (File.Exists(filePath))
         {
@@ -66,14 +67,11 @@ public class ParticipantManager : MonoBehaviour
     {
         if (currentProfile == null || string.IsNullOrEmpty(currentProfile.participantID)) return;
 
-        // --- CHANGED: Save inside the specific folder ---
-        string folderPath = Path.Combine(saveDirectory, currentProfile.participantID);
-        if (!Directory.Exists(folderPath)) Directory.CreateDirectory(folderPath);
+        string participantFolder = Path.Combine(baseDataDirectory, "Participant_" + currentProfile.participantID);
+        if (!Directory.Exists(participantFolder)) Directory.CreateDirectory(participantFolder);
 
-        string filePath = Path.Combine(folderPath, "Profile_" + currentProfile.participantID + ".json");
+        string filePath = Path.Combine(participantFolder, "Profile_" + currentProfile.participantID + ".json");
         string json = JsonUtility.ToJson(currentProfile, true);
         File.WriteAllText(filePath, json);
-
-        Debug.Log("Profile Saved: " + currentProfile.participantID);
     }
 }
