@@ -19,6 +19,7 @@ public class MainMenuHub : MonoBehaviour
     public TMP_Text statusText;
 
     [Header("Level Buttons")]
+    public Button baselineButton;
     public Button assessmentButton;
     public Button easyButton;
     public Button mediumButton;
@@ -83,19 +84,28 @@ public class MainMenuHub : MonoBehaviour
         }
         else
         {
-            statusText.text = "Status: Assessment Required";
+            statusText.text = "Status: Calibration Required";
         }
 
+        // --- STRICT PROGRESSION LOGIC ---
+        // 1. Baseline is always available to start
+        baselineButton.interactable = true;
+
+        // 2. Assessment unlocks ONLY after Baseline
+        assessmentButton.interactable = profile.hasCompletedBaseline;
+
+        // 3. Experimental levels unlock ONLY after Assessment
         easyButton.interactable = profile.hasCompletedAssessment;
         mediumButton.interactable = profile.hasCompletedAssessment;
         hardButton.interactable = profile.hasCompletedAssessment;
+
         questionnaireButton.interactable = (ParticipantManager.Instance.lastPlayedLevel != "Unknown");
 
+        SetButtonColor(baselineButton, profile.hasCompletedBaseline);
         SetButtonColor(assessmentButton, profile.hasCompletedAssessment);
         SetButtonColor(easyButton, profile.hasCompletedEasy);
         SetButtonColor(mediumButton, profile.hasCompletedMedium);
         SetButtonColor(hardButton, profile.hasCompletedHard);
-
     }
 
     void SetButtonColor(Button btn, bool isComplete)
@@ -109,8 +119,8 @@ public class MainMenuHub : MonoBehaviour
     public void LoadEasy() { SceneManager.LoadScene("Level_Easy"); }
     public void LoadMedium() { SceneManager.LoadScene("Level_Medium"); }
     public void LoadHard() { SceneManager.LoadScene("Level_Tough"); }
-
     public void LoadQuestionnaire() { SceneManager.LoadScene("Level_Questionnaire"); }
+    public void LoadBaseline() { SceneManager.LoadScene("Level_Baseline"); }
 
     public void Logout()
     {

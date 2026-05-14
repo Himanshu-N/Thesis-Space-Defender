@@ -5,6 +5,10 @@ using UnityEngine;
 public class ParticipantProfile
 {
     public string participantID;
+
+    // --- NEW: Baseline Tracker ---
+    public bool hasCompletedBaseline = false;
+
     public bool hasCompletedAssessment = false;
     public bool hasCompletedEasy = false;
     public bool hasCompletedMedium = false;

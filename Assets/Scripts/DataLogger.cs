@@ -29,7 +29,7 @@ public class DataLogger : MonoBehaviour
 
         // Construct the full nested path: data/Participant_{ID}/{LevelName}/
         string baseDir = Path.Combine(Application.persistentDataPath, "data");
-        string levelFolder = Path.Combine(baseDir, "Participant_" + currentParticipantID, currentLevelName);
+        string levelFolder = Path.Combine(baseDir, currentParticipantID, currentLevelName);
 
         if (!Directory.Exists(levelFolder))
         {
@@ -83,5 +83,16 @@ public class DataLogger : MonoBehaviour
         File.AppendAllText(filePath, dataRow);
     }
 
+    // ==========================================
+    // BASELINE RESTING LEVEL LOGGING
+    // ==========================================
+    public void LogBaselineTimes(string instructionsStart, string crossStart, string crossEnd)
+    {
+        string topRow = $"Participant:,{currentParticipantID},Level:,{currentLevelName}\n";
+        string header = "Event,Timestamp\n";
+        string data = $"Instructions_Start,{instructionsStart}\nCross_Visible_Start,{crossStart}\nBaseline_End,{crossEnd}\n";
 
+        File.WriteAllText(filePath, topRow + header + data);
+        Debug.Log("<color=green>Baseline timestamps saved perfectly.</color>");
+    }
 }

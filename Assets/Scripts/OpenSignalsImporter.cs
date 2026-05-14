@@ -29,8 +29,8 @@ public class OpenSignalsImporter : MonoBehaviour
         string levelName = ParticipantManager.Instance.lastPlayedLevel;
 
         // Map path to: ProjectSpaceDefender/data/Participant_{ID}/{LevelName}/
-        string baseDir = Path.Combine(Application.persistentDataPath, "ProjectSpaceDefender", "data");
-        string destFolder = Path.Combine(baseDir, "Participant_" + participantID, levelName);
+        string baseDir = Path.Combine(Application.persistentDataPath, "data");
+        string destFolder = Path.Combine(baseDir, participantID, levelName);
 
         if (!Directory.Exists(destFolder)) Directory.CreateDirectory(destFolder);
 
