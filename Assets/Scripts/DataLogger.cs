@@ -82,4 +82,6 @@ public class DataLogger : MonoBehaviour
         string dataRow = $"{wave},{startTime},{endTime},{duration:F2},{spawnRate:F2},{actualSpeed:F2},{rocksSpawned},{rocksDestroyed},{actualScore},{performance:F2}%\n";
         File.AppendAllText(filePath, dataRow);
     }
+
+
 }

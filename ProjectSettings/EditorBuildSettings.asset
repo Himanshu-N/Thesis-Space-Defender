@@ -20,6 +20,9 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/Level_Tough.unity
     guid: 7ffc825b309a0f64a9b9284a7385dd89
+  - enabled: 1
+    path: Assets/Scenes/Level_Questionnaire.unity
+    guid: c449d6ff26f12934593f67250303266e
   m_configObjects:
     com.unity.xr.management.loader_settings: {fileID: 11400000, guid: 906a1dcab4b11fb408217ba834d3116d,
       type: 2}

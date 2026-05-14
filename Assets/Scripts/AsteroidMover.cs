@@ -5,7 +5,7 @@ public class AsteroidMover : MonoBehaviour
     [Header("Movement & Targeting")]
     public float speed = 15f;
     public float maxScale = 2.0f;
-    public Vector2 targetOffset = new Vector2(3f, 3f);
+    public Vector2 targetOffset = new Vector2(1.25f, 0.75f);
 
     [Header("Damage Settings")]
     public int damage = 1;

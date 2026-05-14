@@ -23,6 +23,7 @@ public class MainMenuHub : MonoBehaviour
     public Button easyButton;
     public Button mediumButton;
     public Button hardButton;
+    public Button questionnaireButton;
 
     void Start()
     {
@@ -88,11 +89,13 @@ public class MainMenuHub : MonoBehaviour
         easyButton.interactable = profile.hasCompletedAssessment;
         mediumButton.interactable = profile.hasCompletedAssessment;
         hardButton.interactable = profile.hasCompletedAssessment;
+        questionnaireButton.interactable = (ParticipantManager.Instance.lastPlayedLevel != "Unknown");
 
         SetButtonColor(assessmentButton, profile.hasCompletedAssessment);
         SetButtonColor(easyButton, profile.hasCompletedEasy);
         SetButtonColor(mediumButton, profile.hasCompletedMedium);
         SetButtonColor(hardButton, profile.hasCompletedHard);
+
     }
 
     void SetButtonColor(Button btn, bool isComplete)
@@ -106,6 +109,8 @@ public class MainMenuHub : MonoBehaviour
     public void LoadEasy() { SceneManager.LoadScene("Level_Easy"); }
     public void LoadMedium() { SceneManager.LoadScene("Level_Medium"); }
     public void LoadHard() { SceneManager.LoadScene("Level_Tough"); }
+
+    public void LoadQuestionnaire() { SceneManager.LoadScene("Level_Questionnaire"); }
 
     public void Logout()
     {

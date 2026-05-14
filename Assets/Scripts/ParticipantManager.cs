@@ -34,13 +34,14 @@ public class ParticipantManager : MonoBehaviour
             return;
         }
 
-        // Define the root data folder
+        // Root is now strictly data/ in the persistent data path
         baseDataDirectory = Path.Combine(Application.persistentDataPath, "data");
     }
 
     public void LoginParticipant(string id)
     {
-        string participantFolder = Path.Combine(baseDataDirectory, "Participant_" + id);
+        // Folder is now just the ID (e.g. data/p04)
+        string participantFolder = Path.Combine(baseDataDirectory, id);
         if (!Directory.Exists(participantFolder))
         {
             Directory.CreateDirectory(participantFolder);
@@ -52,14 +53,14 @@ public class ParticipantManager : MonoBehaviour
         {
             string json = File.ReadAllText(filePath);
             currentProfile = JsonUtility.FromJson<ParticipantProfile>(json);
-            Debug.Log("Loaded existing profile for: " + id);
+            Debug.Log("Loaded: " + id);
         }
         else
         {
             currentProfile = new ParticipantProfile();
             currentProfile.participantID = id;
             SaveProfile();
-            Debug.Log("Created new profile for: " + id);
+            Debug.Log("Created: " + id);
         }
     }
 
@@ -67,7 +68,7 @@ public class ParticipantManager : MonoBehaviour
     {
         if (currentProfile == null || string.IsNullOrEmpty(currentProfile.participantID)) return;
 
-        string participantFolder = Path.Combine(baseDataDirectory, "Participant_" + currentProfile.participantID);
+        string participantFolder = Path.Combine(baseDataDirectory, currentProfile.participantID);
         if (!Directory.Exists(participantFolder)) Directory.CreateDirectory(participantFolder);
 
         string filePath = Path.Combine(participantFolder, "Profile_" + currentProfile.participantID + ".json");
