@@ -12893,7 +12893,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c78eaad6eee63ea4ab4f9dc81b250dfa, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  currentDifficulty: 1
+  currentDifficulty: 2
   asteroidVariants:
   - prefab: {fileID: 7437889339238721774, guid: a028a9caf7ccf2443a238296ded73a04,
       type: 3}

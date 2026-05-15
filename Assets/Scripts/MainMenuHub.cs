@@ -118,7 +118,7 @@ public class MainMenuHub : MonoBehaviour
     public void LoadAssessment() { SceneManager.LoadScene("Level_Assessment"); }
     public void LoadEasy() { SceneManager.LoadScene("Level_Easy"); }
     public void LoadMedium() { SceneManager.LoadScene("Level_Medium"); }
-    public void LoadHard() { SceneManager.LoadScene("Level_Tough"); }
+    public void LoadHard() { SceneManager.LoadScene("Level_Hard"); }
     public void LoadQuestionnaire() { SceneManager.LoadScene("Level_Questionnaire"); }
     public void LoadBaseline() { SceneManager.LoadScene("Level_Baseline"); }
 

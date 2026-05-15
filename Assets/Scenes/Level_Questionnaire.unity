@@ -148,7 +148,7 @@ AudioListener:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 3402298}
-  m_Enabled: 1
+  m_Enabled: 0
 --- !u!20 &3402300
 Camera:
   m_ObjectHideFlags: 0
@@ -843,6 +843,7 @@ MonoBehaviour:
   - I had moments where I wanted to stop or give up.
   - I enjoyed the experience.
   - I would like to play the game again.
+  testAssessmentMode: 0
   questionCounterText: {fileID: 1685854225}
   questionBodyText: {fileID: 292931860}
   ratingButtons:
