@@ -27,7 +27,6 @@ public class DataLogger : MonoBehaviour
 
         currentLevelName = levelName;
 
-        // Construct the full nested path: data/Participant_{ID}/{LevelName}/
         string baseDir = Path.Combine(Application.persistentDataPath, "data");
         string levelFolder = Path.Combine(baseDir, currentParticipantID, currentLevelName);
 
@@ -36,10 +35,8 @@ public class DataLogger : MonoBehaviour
             Directory.CreateDirectory(levelFolder);
         }
 
-        // Set exact static filename
         filePath = Path.Combine(levelFolder, "gameplay.csv");
 
-        // Safety: If gameplay.csv already exists (e.g., replaying a level), delete the old one
         if (File.Exists(filePath)) File.Delete(filePath);
     }
 
@@ -64,26 +61,6 @@ public class DataLogger : MonoBehaviour
     }
 
     // ==========================================
-    // EASY/MEDIUM/HARD LOGGING
-    // ==========================================
-    public void LogDifficultyHeader(float startSpawnRate, float startSpeed, float spawnDecrease, float hardSpeedIncrease)
-    {
-        if (hasInitializedHeader) return;
-        string topRow = $"Participant:,{currentParticipantID},Level:,{currentLevelName}\n";
-        string initialRow = $"--- LEVEL PARAMETERS ---,Start Spawn Rate:,{startSpawnRate:F2},Start Speed:,{startSpeed:F2},Wave Spawn Decrease:,{spawnDecrease * 100}%,Hard Wave Speed Increase:,{hardSpeedIncrease * 100}%\n\n";
-        string header = "Wave,StartTime,EndTime,TrueDuration(s),SpawnRate,ActualSpeed,RocksSpawned,RocksDestroyed,ActualWaveScore,Performance%\n";
-
-        File.WriteAllText(filePath, topRow + initialRow + header);
-        hasInitializedHeader = true;
-    }
-
-    public void LogDifficultyWave(int wave, string startTime, string endTime, float duration, float spawnRate, float actualSpeed, int rocksSpawned, int rocksDestroyed, int actualScore, float performance)
-    {
-        string dataRow = $"{wave},{startTime},{endTime},{duration:F2},{spawnRate:F2},{actualSpeed:F2},{rocksSpawned},{rocksDestroyed},{actualScore},{performance:F2}%\n";
-        File.AppendAllText(filePath, dataRow);
-    }
-
-    // ==========================================
     // BASELINE RESTING LEVEL LOGGING
     // ==========================================
     public void LogBaselineTimes(string instructionsStart, string crossStart, string crossEnd)
@@ -94,5 +71,25 @@ public class DataLogger : MonoBehaviour
 
         File.WriteAllText(filePath, topRow + header + data);
         Debug.Log("<color=green>Baseline timestamps saved perfectly.</color>");
+    }
+
+    // ==========================================
+    // EASY/MEDIUM/HARD LOGGING (CLEANED)
+    // ==========================================
+    public void LogDifficultyHeader(float startSpawnRate, float startSpeed)
+    {
+        if (hasInitializedHeader) return;
+        string topRow = $"Participant:,{currentParticipantID},Level:,{currentLevelName}\n";
+        string initialRow = $"--- LEVEL PARAMETERS ---,Start Spawn Rate:,{startSpawnRate:F2},Start Speed:,{startSpeed:F2}\n\n";
+        string header = "Wave,StartTime,EndTime,TrueDuration(s),SpawnRate,ActualSpeed,RocksSpawned,RocksDestroyed,ActualWaveScore,Performance%\n";
+
+        File.WriteAllText(filePath, topRow + initialRow + header);
+        hasInitializedHeader = true;
+    }
+
+    public void LogDifficultyWave(int wave, string startTime, string endTime, float duration, float spawnRate, float actualSpeed, int rocksSpawned, int rocksDestroyed, int actualScore, float performance)
+    {
+        string dataRow = $"{wave},{startTime},{endTime},{duration:F2},{spawnRate:F2},{actualSpeed:F2},{rocksSpawned},{rocksDestroyed},{actualScore},{performance:F2}%\n";
+        File.AppendAllText(filePath, dataRow);
     }
 }

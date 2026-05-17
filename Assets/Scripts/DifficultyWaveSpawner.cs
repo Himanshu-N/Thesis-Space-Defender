@@ -1,15 +1,6 @@
 using System.Collections;
 using UnityEngine;
 
-// --- NEW: Custom class to define rock weights ---
-[System.Serializable]
-public class AsteroidVariant
-{
-    public GameObject prefab;
-    [Tooltip("How many hits/spawns this rock counts as. (Normal = 1, Red = 2)")]
-    public int spawnWeightValue = 1;
-}
-
 public class DifficultyWaveSpawner : MonoBehaviour
 {
     public enum DifficultyMode { Easy, Medium, Hard }
@@ -17,8 +8,8 @@ public class DifficultyWaveSpawner : MonoBehaviour
     [Header("Level Settings")]
     public DifficultyMode currentDifficulty;
 
-    // --- CHANGED: Now uses our custom list instead of a basic array ---
-    public AsteroidVariant[] asteroidVariants;
+    // Reverted back to a simple array
+    public GameObject[] asteroidPrefabs;
 
     [Header("Spawn Area Setup")]
     public Vector3 spawnAreaSize = new Vector3(50f, 20f, 0f);
@@ -33,17 +24,16 @@ public class DifficultyWaveSpawner : MonoBehaviour
     public float easyAdjustment = 0.30f;
     public float hardAdjustment = 0.05f;
 
-    [Header("Intra-Wave Progression")]
-    public float waveSpawnDecrease = 0.05f;
-    public float hardWaveSpeedIncrease = 0.05f;
-
     [Header("Testing Fallbacks (If No Profile Found)")]
     public float fallbackSpeed = 25f;
     public float fallbackSpawnRate = 2f;
 
     private int currentWave = 0;
-    private float currentWaveSpawnRate;
-    private float currentWaveSpeed;
+
+    // Locked parameters for the whole level
+    private float finalCalculatedSpawnRate;
+    private float finalCalculatedSpeed;
+
     private int rocksSpawnedThisWave = 0;
     private bool isSpawning = false;
 
@@ -71,22 +61,22 @@ public class DifficultyWaveSpawner : MonoBehaviour
         switch (currentDifficulty)
         {
             case DifficultyMode.Easy:
-                currentWaveSpeed = baseSpeed * (1f - easyAdjustment);
-                currentWaveSpawnRate = baseSpawn * (1f + easyAdjustment);
+                finalCalculatedSpeed = baseSpeed * (1f - easyAdjustment);
+                finalCalculatedSpawnRate = baseSpawn * (1f + easyAdjustment);
                 break;
             case DifficultyMode.Medium:
-                currentWaveSpeed = baseSpeed;
-                currentWaveSpawnRate = baseSpawn;
+                finalCalculatedSpeed = baseSpeed;
+                finalCalculatedSpawnRate = baseSpawn;
                 break;
             case DifficultyMode.Hard:
-                currentWaveSpeed = baseSpeed * (1f + hardAdjustment);
-                currentWaveSpawnRate = baseSpawn * (1f - hardAdjustment);
+                finalCalculatedSpeed = baseSpeed * (1f + hardAdjustment);
+                finalCalculatedSpawnRate = baseSpawn * (1f - hardAdjustment);
                 break;
         }
 
         if (DataLogger.Instance != null)
         {
-            DataLogger.Instance.LogDifficultyHeader(currentWaveSpawnRate, currentWaveSpeed, waveSpawnDecrease, hardWaveSpeedIncrease);
+            DataLogger.Instance.LogDifficultyHeader(finalCalculatedSpawnRate, finalCalculatedSpeed);
         }
     }
 
@@ -100,19 +90,11 @@ public class DifficultyWaveSpawner : MonoBehaviour
             currentWave++;
             GameManager.Instance.UpdateWaveUI(currentWave, totalWaves);
 
-            if (currentWave > 1)
-            {
-                currentWaveSpawnRate *= (1f - waveSpawnDecrease);
-
-                if (currentDifficulty == DifficultyMode.Hard)
-                {
-                    currentWaveSpeed *= (1f + hardWaveSpeedIncrease);
-                }
-            }
-
             rocksSpawnedThisWave = 0;
             GameManager.Instance.ResetWaveScore();
-            GameManager.Instance.currentRockSpeed = currentWaveSpeed;
+
+            // Assign the static speed to the rocks
+            GameManager.Instance.currentRockSpeed = finalCalculatedSpeed;
 
             string levelCodeName = "";
             if (currentDifficulty == DifficultyMode.Easy) levelCodeName = "ORBIT";
@@ -127,7 +109,7 @@ public class DifficultyWaveSpawner : MonoBehaviour
             float internalStartTime = Time.time;
 
             // SPAWNING
-            GameManager.Instance.SetTimerSubText("Rocks Generating");
+            GameManager.Instance.SetTimerSubText("Rocks\nGenerating");
             float phaseTimer = waveDuration;
             isSpawning = true;
             StartCoroutine(SpawnAsteroidsRoutine());
@@ -142,7 +124,7 @@ public class DifficultyWaveSpawner : MonoBehaviour
             isSpawning = false;
 
             // CLEANUP
-            GameManager.Instance.SetTimerSubText("Debris Cleanup");
+            GameManager.Instance.SetTimerSubText("Debris\nCleanup");
             float cleanupTimer = cleanupDuration;
 
             while (GameObject.FindGameObjectsWithTag("Enemy").Length > 0 && GameManager.Instance.isLevelActive && cleanupTimer > 0)
@@ -168,7 +150,7 @@ public class DifficultyWaveSpawner : MonoBehaviour
             {
                 DataLogger.Instance.LogDifficultyWave(
                     currentWave, waveStartTimeStamp, waveEndTimeStamp, trueDuration,
-                    currentWaveSpawnRate, currentWaveSpeed,
+                    finalCalculatedSpawnRate, finalCalculatedSpeed,
                     rocksSpawnedThisWave, rocksDestroyed, actualScore, performancePercent
                 );
             }
@@ -214,21 +196,18 @@ public class DifficultyWaveSpawner : MonoBehaviour
     {
         while (isSpawning)
         {
-            // --- CHANGED: Now adds the specific weight of the rock that was spawned ---
-            int spawnedWeight = SpawnSingleAsteroid();
-            rocksSpawnedThisWave += spawnedWeight;
-
-            yield return new WaitForSeconds(currentWaveSpawnRate);
+            SpawnSingleAsteroid();
+            rocksSpawnedThisWave++; // Reverted to simple +1 counting
+            yield return new WaitForSeconds(finalCalculatedSpawnRate);
         }
     }
 
-    // --- CHANGED: Returns an integer (the weight) instead of void ---
-    int SpawnSingleAsteroid()
+    void SpawnSingleAsteroid()
     {
-        if (asteroidVariants == null || asteroidVariants.Length == 0) return 0;
+        if (asteroidPrefabs == null || asteroidPrefabs.Length == 0) return;
 
-        int randomIndex = Random.Range(0, asteroidVariants.Length);
-        AsteroidVariant selectedVariant = asteroidVariants[randomIndex];
+        int randomIndex = Random.Range(0, asteroidPrefabs.Length);
+        GameObject selectedPrefab = asteroidPrefabs[randomIndex];
 
         Vector3 randomPos = new Vector3(
             Random.Range(-spawnAreaSize.x / 2, spawnAreaSize.x / 2),
@@ -236,10 +215,7 @@ public class DifficultyWaveSpawner : MonoBehaviour
             Random.Range(-spawnAreaSize.z / 2, spawnAreaSize.z / 2)
         );
         Vector3 finalSpawnPos = transform.position + randomPos;
-        Instantiate(selectedVariant.prefab, finalSpawnPos, Random.rotation);
-
-        // Tell the routine how much this rock is worth
-        return selectedVariant.spawnWeightValue;
+        Instantiate(selectedPrefab, finalSpawnPos, Random.rotation);
     }
 
     void OnDrawGizmosSelected()

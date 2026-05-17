@@ -2480,8 +2480,8 @@ MonoBehaviour:
   instructionTextObj: {fileID: 714915423}
   fixationCrossObj: {fileID: 171904703}
   desktopTimerText: {fileID: 953358871}
-  instructionDuration: 10
-  baselineDuration: 180
+  instructionDuration: 1
+  baselineDuration: 2
 --- !u!4 &2121797269
 Transform:
   m_ObjectHideFlags: 0

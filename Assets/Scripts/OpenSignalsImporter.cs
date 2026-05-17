@@ -28,7 +28,7 @@ public class OpenSignalsImporter : MonoBehaviour
         string participantID = ParticipantManager.Instance.currentProfile.participantID;
         string levelName = ParticipantManager.Instance.lastPlayedLevel;
 
-        // Map path to: ProjectSpaceDefender/data/Participant_{ID}/{LevelName}/
+        // Map path to: ProjectSpaceDefender/data/{ID}/{LevelName}/
         string baseDir = Path.Combine(Application.persistentDataPath, "data");
         string destFolder = Path.Combine(baseDir, participantID, levelName);
 
@@ -70,7 +70,7 @@ public class OpenSignalsImporter : MonoBehaviour
 
             if (filesMoved)
             {
-                UpdateStatus("<color=green>SYNC SUCCESS</color>", $"SUCCESS: Synced {levelName} files to Participant_{participantID} folder.");
+                UpdateStatus("<color=green>SYNC SUCCESS</color>", $"SUCCESS: Synced {levelName} files to {participantID} folder.");
             }
             else
             {
