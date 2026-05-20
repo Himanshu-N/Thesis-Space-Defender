@@ -3870,7 +3870,7 @@ MonoBehaviour:
       m_Calls: []
   m_text: 'Wave
 
-    01/10'
+    01/03'
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 5180e65f455d7654f9169b3bf6dd346b, type: 2}
   m_sharedMaterial: {fileID: -1911896128179697328, guid: 5180e65f455d7654f9169b3bf6dd346b,
@@ -12678,8 +12678,8 @@ MonoBehaviour:
   - {fileID: 7437889339238721774, guid: a028a9caf7ccf2443a238296ded73a04, type: 3}
   spawnAreaSize: {x: 25, y: 20, z: 60}
   totalWaves: 3
-  waveDuration: 2
-  breakDuration: 1
+  waveDuration: 80
+  breakDuration: 10
   cleanupDuration: 15
   easyAdjustment: 0.3
   hardAdjustment: 0.05
